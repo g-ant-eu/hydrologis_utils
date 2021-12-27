@@ -1,6 +1,8 @@
-from hydrologis_utils.strings.utils import check_same_name, split_string
+from hydrologis_utils.string_utils import check_same_name, split_string, trim_or_pad_to_count
 
 import unittest
+
+# run with python3 -m unittest discover tests/
 
 class TestStrings(unittest.TestCase):
     
@@ -19,6 +21,17 @@ class TestStrings(unittest.TestCase):
         self.assertEqual(list[0], "Sit deserunt aliquid")
         for l in list:
             self.assertLessEqual(len(l), lim)
+    
+    def test_trim_or_pad_to_count(self):
+        string = "1234567890"
+        count = 12
+        new_string = trim_or_pad_to_count(string, count)
+        self.assertEqual(new_string, "1234567890  ")
+        
+        count = 8
+        new_string = trim_or_pad_to_count(string, count)
+        self.assertEqual(new_string, "12345678")
+        
             
 
 if __name__ == "__main__":

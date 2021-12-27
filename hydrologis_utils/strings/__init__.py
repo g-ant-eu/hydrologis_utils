@@ -1,1 +1,0 @@
-"""The string utilities package."""

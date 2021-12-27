@@ -1,3 +1,8 @@
+"""
+Utilities to work with strings.
+"""
+
+
 def check_same_name( strings, checkString ):
     """Check if a string exists in a list of string and if necessary add a number to avoid collision.
 
@@ -63,3 +68,18 @@ def split_string( string,  limit ):
         list.append(sub)
         start = end + 1
     return list
+
+def trim_or_pad_to_count( string, count ):
+    """Trims or pads a string to a given count.
+
+    :param string: the string to trim or pad.
+    :param count: the count to use.
+    :return: the resulting string.
+    """
+    while len(string) < count:
+        string = string + " "
+    
+    if len(string) > count:
+        string = string[0: count]
+    
+    return string
