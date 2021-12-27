@@ -49,7 +49,7 @@ def split_string( string,  limit ):
     while start < l - 1:
         charCount = 0
         lastSpace = 0
-        while charCount < limit:
+        while charCount <= limit:
             if string[charCount + start] == ' ':
                 lastSpace = charCount
             
