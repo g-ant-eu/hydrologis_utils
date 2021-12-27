@@ -31,3 +31,35 @@ def check_same_name( strings, checkString ):
     
     return string
     
+
+def split_string( string,  limit ):
+    """Splits a string by char limit, not breaking works.
+     
+    :param string: the string to split.
+    :param limit: the char limit.
+    :return: the list of split words.
+    """
+    list = []
+
+    # chars = string.toCharArray();
+    endOfString = False
+    start = 0
+    end = start
+    l = len(string)
+    while start < l - 1:
+        charCount = 0
+        lastSpace = 0
+        while charCount < limit:
+            if string[charCount + start] == ' ':
+                lastSpace = charCount
+            
+            charCount = charCount + 1
+            if charCount + start == l:
+                endOfString = True
+                break
+            
+        end = l if endOfString else lastSpace + start if (lastSpace > 0) else charCount + start
+        sub = string[start:end]
+        list.append(sub)
+        start = end + 1
+    return list
