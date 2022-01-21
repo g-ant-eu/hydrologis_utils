@@ -2,12 +2,14 @@ from hydrologis_utils.db_utils import *
 
 from sqlalchemy import Table, Column, Integer, String, MetaData, select
 from geoalchemy2 import Geometry
+from geoalchemy2.shape import from_shape, to_shape
+
 
 import unittest
 
 # run with python3 -m unittest discover tests/
 
-class TestStrings(unittest.TestCase):
+class TestDb(unittest.TestCase):
     def test_col(self):
         col = DbColumn(name="test", is_autoincrement=False, blah="blu")
         self.assertEqual(col.name, "test")
@@ -21,7 +23,7 @@ class TestStrings(unittest.TestCase):
         self.assertEqual(col.name, "test")
 
     
-    def test_posgres(self):
+    def test_postgres(self):
         db_host = 'localhost'
         db_port = '5432'
         db_name = 'test'
@@ -32,8 +34,8 @@ class TestStrings(unittest.TestCase):
 
         db = PostgresDb(url, echo=False)
         tables = db.get_tables(do_order=True)
-        for tabel in tables:
-            print(tabel)
+        # for tabel in tables:
+        #     print(tabel)
 
         tname = "django_content_type"
 
@@ -57,6 +59,11 @@ class TestStrings(unittest.TestCase):
             db.drop_table(lake_table)
 
         db.create_table(lake_table)
+
+        cols = db.get_table_columns(lake_table.name)
+        print(f"COLUMNS: {lake_table.name}")
+        for col in cols:
+            print(col)
         
         dataList = [
             {'name': 'Majeur', 'geom': 'SRID=4326;POLYGON((0 0,1 0,1 1,0 1,0 0))'},
@@ -65,19 +72,27 @@ class TestStrings(unittest.TestCase):
         ]
         db.insert(lake_table, dataList)
 
+        #  conn.execute(Poi.__table__.insert(), [
+        #     {'geog': 'SRID=4326;POINT(1 1)'},
+        #     {'geog': WKTElement('POINT(1 1)', srid=4326)},
+        #     {'geog': WKTElement('SRID=4326;POINT(1 1)', extended=True)},
+        #     {'geog': from_shape(Point(1, 1), srid=4326)}
+        # ])
+
 
         sel_obj  = select([lake_table])
         result = db.select(sel_obj)
         for row in result:
-            area = db.scalar(row['geom'].ST_Area())
-            wkt = db.scalar(row['geom'].ST_AsEWKT())
-            print(f"{row[0]} - {row[1]} - {area} - {wkt}")
+            geom = to_shape(row['geom'])
+            area = db.decode(row['geom'].ST_Area())
+            wkt = db.decode(row['geom'].ST_AsEWKT())
+            print(f"{row[0]} - {geom}  - {area} - {wkt}")
         
-        result = db.query("select * from lake")
-        for row in result:
-            area = db.scalar(row['geom'].ST_Area())
-            wkt = db.scalar(row['geom'].ST_AsEWKT())
-            print(f"{row[0]} - {row[1]} - {area} - {wkt}")
+        # result = db.query("select * from lake")
+        # for row in result:
+        #     area = db.scalar(row['geom'].ST_Area())
+        #     wkt = db.scalar(row['geom'].ST_AsEWKT())
+        #     print(f"{row[0]} - {row[1]} - {area} - {wkt}")
         
   
 

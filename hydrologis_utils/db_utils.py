@@ -4,6 +4,7 @@ Utilities to work with databases.
 
 from enum import Enum
 from sqlalchemy import create_engine, text, inspect
+from geoalchemy2 import Geometry, Geography
 from abc import ABC, abstractmethod
 
 
@@ -40,9 +41,29 @@ class DbColumn:
         self.default = kwargs['default']
         self.is_autoincrement = kwargs['autoincrement']
         self.comment = kwargs['comment']
-    
+        self.geoinfo = None
+        if isinstance(self.type, Geometry):
+            self.geoinfo = GeoInfo(self.type)
+
     def __str__(self):
-        return self.name
+        s = f"{self.name} "
+        if self.geoinfo:
+            s += f"({self.geoinfo})"
+        else:
+            s += f"({self.type})"
+        return s
+
+class GeoInfo:
+    def __init__(self, geom_type):
+        self.name = geom_type.name
+        self.type = geom_type.geometry_type
+        self.srid = geom_type.srid
+        self.dimension = geom_type.dimension
+        self.has_index = geom_type.spatial_index
+
+    def __str__(self):
+        return f"{self.type}, {self.srid}, DIM={self.dimension}, IDX={self.has_index}"
+    
 
 class ADb(ABC):
     def __init__(self, url, encoding="utf-8", echo=True, future=False):
@@ -74,10 +95,7 @@ class ADb(ABC):
         """
         inspector = inspect(self.engine)
         columns = inspector.get_columns(table_name)
-        db_cols = [] # [ DbColumn(item) for item in columns ]
-        for c in columns:
-            db_col = DbColumn(**c)
-            db_cols.append(db_col)
+        db_cols = [ DbColumn(**item) for item in columns ]
         return db_cols
 
     def query(self, sql_string):
@@ -108,7 +126,12 @@ class ADb(ABC):
             result = conn.execute(select_object)
             return result
     
-    def scalar(self, obj):
+    def decode(self, obj):
+        """Decode values to their scalar or string representation.
+
+        :param obj: the object to convert.
+        :return: the decoded object.
+        """
         with self.engine.connect() as conn:
             return conn.scalar(obj)
 
