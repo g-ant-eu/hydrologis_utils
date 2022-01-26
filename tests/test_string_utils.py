@@ -4,7 +4,7 @@ import unittest
 
 # run with python3 -m unittest discover tests/
 
-class TestStrings(unittest.TestCase):
+class TestStringUtils(unittest.TestCase):
     
     def test_checkname(self):
         string = "name"

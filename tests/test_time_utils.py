@@ -4,7 +4,7 @@ import unittest
 
 # run with python3 -m unittest discover tests/
 
-class TestStrings(unittest.TestCase):
+class TestTimeutils(unittest.TestCase):
     CHECKDATE = "2021-12-24 12:00:00"
     
     def test_new_datetime(self):

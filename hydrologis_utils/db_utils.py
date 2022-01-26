@@ -162,15 +162,19 @@ class ADb(ABC):
     def drop_table(self, table_object):
         table_object.drop(self.engine)
     
-    def drop_table(self, table_name):
+    def drop_table(self, table_name, schema=None):
         """Drop a table or view by its name.
         """
         geometry_col = self.get_geometry_column(table_name)
         with self.engine.connect() as conn:
             trans = conn.begin()
-            if geometry_col:
-                conn.execute(text(f"select DropGeometryColumn('public','{table_name}', '{geometry_col.name}');"))
-            result = conn.execute(text(f"drop table if exists {table_name} cascade"))
+
+            if self.has_view(table_name, schema=schema):
+                result = conn.execute(text(f"drop view if exists {table_name}"))
+            elif self.has_table(table_name, schema=schema):
+                if geometry_col:
+                    conn.execute(text(f"select DropGeometryColumn('public','{table_name}', '{geometry_col.name}');"))
+                result = conn.execute(text(f"drop table if exists {table_name} cascade"))
             trans.commit()
             return result
     

@@ -5,6 +5,7 @@ Utilities to work with files.
 import os
 import shutil
 import tempfile
+import csv
 
 def create_tmp_file(mode = "w+"):
     """Create a temp file, by default in text write mode.
@@ -12,7 +13,7 @@ def create_tmp_file(mode = "w+"):
     :param mode: the file mode to use.
     :return: the created file, which needs to be closed by the user.
     """
-    f = tempfile.TemporaryFile(mode = mode)
+    f = tempfile.NamedTemporaryFile(mode = mode)
     return f
 
 def create_tmp_folder():
@@ -55,6 +56,83 @@ def delete_file_or_folder(path):
                 shutil.rmtree(file_path)
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
+def write_list_to_file(path, lines_list, append=False):
+    """Write a list of lines to a file.
+
+    :param path: the absolute path to write to.
+    :param lines_list: a list of lists of the data to write to file.
+    :param append: optional parameter to append to an existing file.
+    """
+    mode = 'a' if append else 'w'
+    with open(path, mode) as out_file:
+        is_first = True
+        for line in lines_list:
+            if not is_first:
+                out_file.write('\n')
+            else:
+                is_first = False
+            out_file.writelines(line)
+
+def write_text_to_file(path, text, append=False):
+    """Write text to a file.
+
+    :param path: the absolute path to write to.
+    :param text: a text to write to file.
+    :param append: optional parameter to append to an existing file.
+    """
+    mode = 'a' if append else 'w'
+    with open(path, mode) as out_file:
+        out_file.write(text)
+
+def read_text_from_file(path, encoding='UTF-8'):
+    """Read text from a file.
+
+    :param path: the absolute path to read from.
+    :return: the read string.
+    """
+    
+    with open(path, 'r', encoding=encoding) as out_file:
+        return out_file.read()
+
+def read_text_lines_from_file(path, encoding='UTF-8'):
+    """Read text lines list from a file.
+
+    :param path: the absolute path to read from.
+    :return: the read lines list.
+    """
+    
+    with open(path, 'r', encoding=encoding) as out_file:
+        return out_file.read().split("\n")
+
+def write_list_to_csv(path, rows_list, delimiter=";", encoding='UTF-8'):
+    """Write a list of rows to a csv file.
+
+    :param path: the absolute path to write to.
+    :param rows_list: a list of lists of the data to write to file.
+    :param delimiter: optional delimiter.
+    :param encoding: optional encoding.
+    """
+    with open(path,'w', encoding=encoding) as out_csv_file:
+        csv_writer = csv.writer(out_csv_file, dialect=csv.excel, delimiter=delimiter)
+        for row in rows_list:
+            csv_writer.writerow(row)
+
+def write_dict_to_csv(path, header, dict_list, delimiter=";", encoding='UTF-8'):
+    """Write a list of rows to a csv file.
+
+    :param path: the absolute path to write to.
+    :param header: the csv field. If not available, it is taken from the first dictionary.
+    :param dict_list: a list of dictionaries of the data to write to file.
+    :param delimiter: optional delimiter.
+    :param encoding: optional encoding.
+    """
+    with open(path,'w', encoding=encoding) as out_csv_file:
+        csv_writer = csv.DictWriter(out_csv_file, fieldnames=header, dialect=csv.excel, delimiter=delimiter)
+        csv_writer.writeheader()
+        for dict in dict_list:
+            csv_writer.writerow(dict)
 
 # def create_file_structure(basepath, structure):
 #     """Create a files and folders structure from a dictionary.
