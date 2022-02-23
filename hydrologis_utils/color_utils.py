@@ -57,9 +57,10 @@ class ColorTableNames(enum.Enum):
     Currently available colotables.
     """
     RAINBOW = "rainbow"
-    TWELVE_PAIRED = "colorbrewer_twelveClassPaired"
-    TWELVE_SET3 = "colorbrewer_twelveClassSet3"
-    MAINCOLORS = "mainColors"
+    TWELVE_PAIRED = "colorbrewer_twelve_class_paired"
+    TWELVE_SET3 = "colorbrewer_twelve_class_set3"
+    CHART_COLORS = "chart_colors"
+    MAINCOLORS = "main_colors"
     CONTRASTING = "contrasting"
     CONTRASTING130 = "contrasting130"
 
@@ -73,7 +74,7 @@ COLORTABLES = {
         "#FF00FF", 
         "#FF0000"
     ],
-    "colorbrewer_twelveClassPaired" :[
+    "colorbrewer_twelve_class_paired" :[
         "#a6cee3", 
         "#1f78b4", 
         "#b2df8a", 
@@ -87,7 +88,7 @@ COLORTABLES = {
         "#b15928", 
         "#ffff99"
     ],
-    "colorbrewer_twelveClassSet3" : [
+    "colorbrewer_twelve_class_set3" : [
         "#80b1d3", 
         "#fb8072", 
         "#8dd3c7", 
@@ -101,13 +102,40 @@ COLORTABLES = {
         "#ccebc5", 
         "#ffed6f" 
     ],
-    "mainColors": [
+    "main_colors": [
         "#FF0000", 
         "#00FF00", 
         "#0000FF", 
         "#FFFF00", 
         "#00FFFF", 
         "#FF00FF" 
+    ],
+    "chart_colors" :[
+        "#80b1d3", 
+        "#fb8072", 
+        "#29BF12", 
+        "#8dd3c7", 
+        "#bebada", 
+        "#fdb462", 
+        "#507dbc", 
+        "#b3de69", 
+        "#ffe66d", 
+        "#42e2b8", 
+        "#fccde5", 
+        "#FF5964",
+        "#bc80bd", 
+        "#ccebc5", 
+        "#08BDBD", 
+        "#798478", 
+        "#2d82b7", 
+        "#b2ffd6", 
+        "#dce2aa", 
+        "#424b54", 
+        "#944bbb", 
+        "#715b64", 
+        "#ceb5a7", 
+        "#5b7b7a", 
+        "#ffed6f" 
     ],
     "contrasting":[
         "#2E2532", 

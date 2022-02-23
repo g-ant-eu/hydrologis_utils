@@ -1,3 +1,4 @@
+from sqlalchemy import null
 from hydrologis_utils.color_utils import *
 
 import unittest
@@ -6,6 +7,11 @@ import unittest
 
 class TestColorUtils(unittest.TestCase):
     
+    def test_existence(self):
+        colorNames = [e.value for e in ColorTableNames]
+        for name in colorNames:
+            self.assertTrue(name in COLORTABLES)
+
     def test_next_value(self):
         ctName = ColorTableNames.RAINBOW.value
 
