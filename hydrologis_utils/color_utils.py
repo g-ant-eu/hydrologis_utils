@@ -1,5 +1,76 @@
 import enum
 
+class ColorUtilities():
+    """
+    Utilities methods for color management.
+    """
+
+    @staticmethod
+    def get_darker_color(hex_color, offset=0.2):
+        """ 
+        Makes a darker color variant.
+        
+        Parameters
+        ----------
+        hex_color: str
+            the hex color like #FF0000.
+        offset: float
+            the offset percentage. 0.2 is 20%.
+        
+        Returns
+        -------
+        str:
+            the darkened color's hex.
+        
+        Raises
+        ------
+        Exception:
+            if the color format passed is not valid.
+        """
+        return ColorUtilities._process_color(hex_color, -offset)
+
+    @staticmethod
+    def get_brighter_color(hex_color, offset=0.2):
+        """ 
+        Makes a brighter color variant.
+        
+        Parameters
+        ----------
+        hex_color: str
+            the hex color like #FF0000.
+        offset: float
+            the offset percentage. 0.2 is 20%.
+        
+        Returns
+        -------
+        str:
+            the brighter color's hex.
+        
+        Raises
+        ------
+        Exception:
+            if the color format passed is not valid.
+        """
+        return ColorUtilities._process_color(hex_color, offset)
+
+    @staticmethod
+    def _process_color(hex_color, lum=0.2):
+        if len(hex_color) != 7:  
+            raise Exception("The hex format needs to be like #FF0000.")  
+
+        hex_color = hex_color[1:]
+        rgb = "#"
+        for i in range(0,3):
+            x = i*2
+            c = int(hex_color[x:x+2], 16)
+            c = round(min(max(0, c + (255*lum)), 255))
+            h = hex(c)[2:]
+            h1 = "00" + h
+            h1 = h1[len(h):]
+            rgb += h1
+
+        return rgb
+
 class ColorProvider():
     """
     A simple color provider class, based on a chosen colortable.

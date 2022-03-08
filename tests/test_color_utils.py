@@ -41,6 +41,35 @@ class TestColorUtils(unittest.TestCase):
             c2 = ct[i]
             self.assertEqual(c1, c2)
 
+    def test_darken(self):
+        c = "#00FF00"
+        results = [
+            "#00ff00",
+            "#00cc00",
+            "#009900",
+            "#006600",
+            "#003300",
+        ]
+
+        for i in [0, 1,2,3,4]:
+            darkC = ColorUtilities.get_darker_color(c, offset=i*0.2)
+            self.assertEqual(results[i], darkC)
+
+    def test_birghten(self):
+        c = "#003300"
+        results = [
+            "#003300",
+            "#336633",
+            "#669966",
+            "#99cc99",
+            "#ccffcc",
+        ]
+
+        for i in [0, 1,2,3,4]:
+            brightC = ColorUtilities.get_brighter_color(c, offset=i*0.2)
+            self.assertEqual(results[i], brightC)
+
+
 
 
 if __name__ == "__main__":
