@@ -6,6 +6,7 @@ import unittest
 
 class TestTimeutils(unittest.TestCase):
     CHECKDATE = "2021-12-24 12:00:00"
+    CHECKDATE_COMPACT = "20211224_120000"
     
     def test_new_datetime(self):
         string = self.CHECKDATE
@@ -31,6 +32,13 @@ class TestTimeutils(unittest.TestCase):
         str = quick_to_string(dt.timestamp())
 
         self.assertEqual(string, str)
+
+    def test_compact(self):
+        string = self.CHECKDATE
+        dt = new_datetime(string)
+        str = to_string_compact(dt)
+
+        self.assertEqual(self.CHECKDATE_COMPACT, str)
     
     def test_quick_utc_to_string(self):
         string = self.CHECKDATE

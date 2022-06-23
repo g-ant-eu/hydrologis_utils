@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 import csv
+import zipfile
 
 def create_tmp_file(mode = "w+"):
     """Create a temp file, by default in text write mode.
@@ -19,10 +20,24 @@ def create_tmp_file(mode = "w+"):
 def create_tmp_folder():
     """Create a temp folder.
 
-    :return: the created folder.
+    :return: the created folder path.
     """
-    f = tempfile.TemporaryDirectory()
-    return f
+    path = tempfile.mkdtemp()
+    return path
+
+def delete_folder(folder_path):
+    """Delete a folder and its content.
+    """
+    shutil.rmtree(folder_path)
+
+def join_paths(path1, path2):
+    """Joint parts of a paths.
+    
+    :param path1: the first path piece.
+    :param path2: the second path piece.
+    :return: the joined path.
+    """
+    return os.path.join(path1, path2)
 
 def copy_file( fromPath, toPath ):
     """Copy a file from one path to another.
@@ -32,6 +47,28 @@ def copy_file( fromPath, toPath ):
     """
     shutil.copyfile(fromPath, toPath)
 
+def get_file_name(path, remove_ext=False):
+    """
+    Get the file name from a path.
+    
+    Parameters
+    ----------
+    path: String
+        The file path.
+    remove_ext: boolean
+        If True, remove the extension from the name.
+    
+    Returns
+    -------
+    string:
+        the file name.
+    """
+
+    basename = os.path.basename(path)
+    if remove_ext:
+       basename = os.path.splitext(basename)[0]
+    return basename
+
 
 def get_modification_timestamp(path):
     """Get the modification timestamp of an existing file.
@@ -39,7 +76,7 @@ def get_modification_timestamp(path):
     :param path: the path to the file to check.
     :return: the timestamp (unix epoch) of last modification.
     """
-    os.path.getmtime(path)
+    return os.path.getmtime(path)
 
 
 def delete_file_or_folder(path):
@@ -133,6 +170,48 @@ def write_dict_to_csv(path, header, dict_list, delimiter=";", encoding='UTF-8'):
         csv_writer.writeheader()
         for dict in dict_list:
             csv_writer.writerow(dict)
+
+def zip_files_list(files_list, output_zip_file, use_basenames=True, remove_path_from_name=""):
+    """
+    Zip files from a list of paths.
+    
+    Parameters
+    ----------
+    files_list: list
+        the list of files to zip.
+    output_zip_file: path
+        the zip file to create.
+    use_basenames: boolean
+        if True, use the basenames in the zip file (no full path).
+    remove_path_from_name: string
+        if not empty, remove the path from the basename (to create relative paths).
+    """
+    with zipfile.ZipFile(output_zip_file, 'w') as zipMe:        
+        for file in files_list:
+            basename = file
+            if use_basenames:
+                basename = os.path.basename(basename)
+            if remove_path_from_name:
+                basename = basename.replace(remove_path_from_name, "")
+            zipMe.write(file, arcname=basename, compress_type=zipfile.ZIP_DEFLATED)
+
+def get_zip_file_names(zip_file):
+    """
+    Get th elist of files in a zip.
+    
+    Parameters
+    ----------
+    zip_file: string
+        the zip file path.
+    
+    Returns
+    -------
+    list:
+        the list of names of the items in the zip.
+    """
+
+    with zipfile.ZipFile(zip_file, 'r') as zip:
+        return zip.namelist()
 
 # def create_file_structure(basepath, structure):
 #     """Create a files and folders structure from a dictionary.

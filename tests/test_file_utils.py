@@ -56,6 +56,36 @@ class TestFileUtils(unittest.TestCase):
         self.assertEquals(csv_lines[2], "2;test2;cat2")
         self.assertEquals(csv_lines[3], "3;;cat3")
 
+    def test_file_utils(self):
+        path = "/home/hydrologis/tmp/file.txt"
+        self.assertEquals(get_file_name(path), "file.txt")
+        self.assertEquals(get_file_name(path, remove_ext=True), "file")
+
+
+        path1 = "/home/hydrologis"
+        path2 = "tmp/"
+        path3 = "file.txt"
+        joined = join_paths(join_paths(path1, path2), path3)
+        self.assertEquals(joined, "/home/hydrologis/tmp/file.txt")
+
+    def test_zip_utils(self):
+        tmp_folder = create_tmp_folder()
+        f1 = join_paths(tmp_folder, "file1.txt")
+        write_text_to_file(f1, "blah1")
+        f2 = join_paths(tmp_folder, "file2.txt")
+        write_text_to_file(f2, "blah2")
+        outZip = join_paths(tmp_folder, "output.zip")
+
+        list = [f1, f2]
+        zip_files_list(list, outZip, use_basenames=True)
+        
+        self.assertTrue(os.path.exists(outZip))
+
+        names = get_zip_file_names(outZip)
+        self.assertEquals(len(names), 2)
+        self.assertTrue("file1.txt" in names)
+        self.assertTrue("file2.txt" in names)
+
 
 
     # def test_folder_removal(self):

@@ -5,6 +5,7 @@ Utilities to work with time.
 import datetime
 
 PATTERN_WITH_SECONDS = "%Y-%m-%d %H:%M:%S"
+PATTERN_COMPACT = "%Y%m%d_%H%M%S"
 
 def new_datetime(string = None):
     """Create a new datetime object.
@@ -43,6 +44,14 @@ def to_string_with_minutes( dt ):
     :return: the formatted string.
     """
     return dt.strftime("%Y-%m-%d %H:%M")
+
+def to_string_compact( dt ):
+    """Get String of format: YYYYMMDD_HHMMSS from a datetime object.
+
+    :param dt: the datetime object to format.
+    :return: the formatted string.
+    """
+    return dt.strftime(PATTERN_COMPACT)
 
 def quick_utc_to_string( unixEpoch ):
     """Quick long to timestamp string formatter, UTC.
