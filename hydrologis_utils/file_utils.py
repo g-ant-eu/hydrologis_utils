@@ -231,4 +231,25 @@ def get_zip_file_names(zip_file):
 #             os.path.join(folder, object)
 
     
-
+def list_files(folder_path, extension=None):
+    """
+    List files inside a folder.
+    
+    Parameters
+    ----------
+    folder_path: str
+        the folder to list files from.
+    extenstion: str
+        optiona extension to filter on.
+    
+    Returns
+    -------
+    list:
+        the list of file names found in the folder.
+    """
+    list = []
+    for name in os.listdir(folder_path):
+        if extension and not name.endswith(extension):
+            continue
+        list.append(name)
+    return list

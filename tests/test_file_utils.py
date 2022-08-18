@@ -86,6 +86,17 @@ class TestFileUtils(unittest.TestCase):
         self.assertTrue("file1.txt" in names)
         self.assertTrue("file2.txt" in names)
 
+    def test_file_list(self):
+        tmp_folder = create_tmp_folder()
+        f1 = join_paths(tmp_folder, "file1.csv")
+        write_text_to_file(f1, "blah1")
+        f2 = join_paths(tmp_folder, "file2.txt")
+        write_text_to_file(f2, "blah2")
+
+        list = list_files(tmp_folder)
+        self.assertEquals(len(list), 2)
+        list = list_files(tmp_folder, extension="csv")
+        self.assertEquals(len(list), 1)
 
 
     # def test_folder_removal(self):
