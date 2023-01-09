@@ -49,7 +49,14 @@ class TestFileUtils(unittest.TestCase):
                 "cat": "cat3"
             }
         ]
-        write_dict_to_csv(path, ["id", "name", "cat"], data)
+        write_dict_to_csv(path, data, header=["id", "name", "cat"])
+        csv_lines = read_text_lines_from_file(path)
+        self.assertEquals(csv_lines[0], "id;name;cat")
+        self.assertEquals(csv_lines[1], "1;test1;cat1")
+        self.assertEquals(csv_lines[2], "2;test2;cat2")
+        self.assertEquals(csv_lines[3], "3;;cat3")
+
+        write_dict_to_csv(path, data)
         csv_lines = read_text_lines_from_file(path)
         self.assertEquals(csv_lines[0], "id;name;cat")
         self.assertEquals(csv_lines[1], "1;test1;cat1")

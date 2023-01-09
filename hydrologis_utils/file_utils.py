@@ -8,6 +8,12 @@ import tempfile
 import csv
 import zipfile
 
+def getHome():
+    """
+    Get the home of the current user.
+    """
+    return os.path.expanduser('~')
+
 def create_tmp_file(mode = "w+"):
     """Create a temp file, by default in text write mode.
 
@@ -156,16 +162,19 @@ def write_list_to_csv(path, rows_list, delimiter=";", encoding='UTF-8'):
         for row in rows_list:
             csv_writer.writerow(row)
 
-def write_dict_to_csv(path, header, dict_list, delimiter=";", encoding='UTF-8'):
+def write_dict_to_csv(path, dict_list, header=None, delimiter=";", encoding='UTF-8'):
     """Write a list of rows to a csv file.
 
     :param path: the absolute path to write to.
-    :param header: the csv field. If not available, it is taken from the first dictionary.
     :param dict_list: a list of dictionaries of the data to write to file.
+    :param header: the csv fields. If not available, it is taken from the first dictionary.
     :param delimiter: optional delimiter.
     :param encoding: optional encoding.
     """
     with open(path,'w', encoding=encoding) as out_csv_file:
+        if not header:
+            header = [k for k,v in dict_list[0].items()]
+
         csv_writer = csv.DictWriter(out_csv_file, fieldnames=header, dialect=csv.excel, delimiter=delimiter)
         csv_writer.writeheader()
         for dict in dict_list:
