@@ -11,39 +11,39 @@ class TestTimeutils(unittest.TestCase):
     def test_new_datetime(self):
         string = self.CHECKDATE
 
-        dt = new_datetime(string)
+        dt = newDatetime(string)
 
-        str = to_string_with_seconds(dt)
+        str = toStringWithSeconds(dt)
 
         self.assertEqual(string, str)
 
     def test_new_datetime_utc(self):
         string = self.CHECKDATE
 
-        dt = new_datetime_utc(string)
+        dt = newDatetimeUtc(string)
 
-        str = to_string_with_seconds(dt)
+        str = toStringWithSeconds(dt)
 
         self.assertEqual(string, str)
     
     def test_quick_to_string(self):
         string = self.CHECKDATE
-        dt = new_datetime(string)
-        str = quick_to_string(dt.timestamp())
+        dt = newDatetime(string)
+        str = quickToString(dt.timestamp())
 
         self.assertEqual(string, str)
 
     def test_compact(self):
         string = self.CHECKDATE
-        dt = new_datetime(string)
-        str = to_string_compact(dt)
+        dt = newDatetime(string)
+        str = toStringCompact(dt)
 
         self.assertEqual(self.CHECKDATE_COMPACT, str)
     
     def test_quick_utc_to_string(self):
         string = self.CHECKDATE
-        dt = new_datetime_utc(string)
-        str = quick_utc_to_string(dt.timestamp())
+        dt = newDatetimeUtc(string)
+        str = quickUtcToString(dt.timestamp())
 
         self.assertEqual(string, str)         
 

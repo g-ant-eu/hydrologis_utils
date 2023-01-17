@@ -14,16 +14,24 @@ def getHome():
     """
     return os.path.expanduser('~')
 
-def create_tmp_file(mode = "w+"):
+def exists(path):
+    """
+    Check if a file exists in the given path.
+    """
+    return os.path.exists(path)
+
+def createTmpFile(mode = "w+"):
     """Create a temp file, by default in text write mode.
 
     :param mode: the file mode to use.
     :return: the created file, which needs to be closed by the user.
     """
     f = tempfile.NamedTemporaryFile(mode = mode)
-    return f
+    path = f.name
+    f.close()
+    return path
 
-def create_tmp_folder():
+def createTmpFolder():
     """Create a temp folder.
 
     :return: the created folder path.
@@ -31,12 +39,12 @@ def create_tmp_folder():
     path = tempfile.mkdtemp()
     return path
 
-def delete_folder(folder_path):
+def deleteFolder(folder_path):
     """Delete a folder and its content.
     """
     shutil.rmtree(folder_path)
 
-def join_paths(path1, path2):
+def joinPaths(path1, path2):
     """Joint parts of a paths.
     
     :param path1: the first path piece.
@@ -45,7 +53,7 @@ def join_paths(path1, path2):
     """
     return os.path.join(path1, path2)
 
-def copy_file( fromPath, toPath ):
+def copyFile( fromPath, toPath ):
     """Copy a file from one path to another.
 
     :param fromPath: the path to the file to copy.
@@ -53,7 +61,7 @@ def copy_file( fromPath, toPath ):
     """
     shutil.copyfile(fromPath, toPath)
 
-def get_file_name(path, remove_ext=False):
+def getFileName(path, remove_ext=False):
     """
     Get the file name from a path.
     
@@ -76,7 +84,7 @@ def get_file_name(path, remove_ext=False):
     return basename
 
 
-def get_modification_timestamp(path):
+def getModificationTimestamp(path):
     """Get the modification timestamp of an existing file.
 
     :param path: the path to the file to check.
@@ -85,7 +93,7 @@ def get_modification_timestamp(path):
     return os.path.getmtime(path)
 
 
-def delete_file_or_folder(path):
+def deleteFileOrFolder(path):
     """Delete a file or a folder and its content.
 
     :param path: the path to the file/folder to remove.
@@ -101,7 +109,7 @@ def delete_file_or_folder(path):
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
-def write_list_to_file(path, lines_list, append=False):
+def writeListToFile(path, lines_list, append=False):
     """Write a list of lines to a file.
 
     :param path: the absolute path to write to.
@@ -118,7 +126,7 @@ def write_list_to_file(path, lines_list, append=False):
                 is_first = False
             out_file.writelines(line)
 
-def write_text_to_file(path, text, append=False):
+def writeTextToFile(path, text, append=False):
     """Write text to a file.
 
     :param path: the absolute path to write to.
@@ -129,7 +137,7 @@ def write_text_to_file(path, text, append=False):
     with open(path, mode) as out_file:
         out_file.write(text)
 
-def read_text_from_file(path, encoding='UTF-8'):
+def readTextFromFile(path, encoding='UTF-8'):
     """Read text from a file.
 
     :param path: the absolute path to read from.
@@ -139,7 +147,7 @@ def read_text_from_file(path, encoding='UTF-8'):
     with open(path, 'r', encoding=encoding) as out_file:
         return out_file.read()
 
-def read_text_lines_from_file(path, encoding='UTF-8'):
+def readTextLinesFromFile(path, encoding='UTF-8'):
     """Read text lines list from a file.
 
     :param path: the absolute path to read from.
@@ -149,7 +157,7 @@ def read_text_lines_from_file(path, encoding='UTF-8'):
     with open(path, 'r', encoding=encoding) as out_file:
         return out_file.read().split("\n")
 
-def write_list_to_csv(path, rows_list, delimiter=";", encoding='UTF-8'):
+def writeListToCsv(path, rows_list, delimiter=";", encoding='UTF-8'):
     """Write a list of rows to a csv file.
 
     :param path: the absolute path to write to.
@@ -162,7 +170,7 @@ def write_list_to_csv(path, rows_list, delimiter=";", encoding='UTF-8'):
         for row in rows_list:
             csv_writer.writerow(row)
 
-def write_dict_to_csv(path, dict_list, header=None, delimiter=";", encoding='UTF-8'):
+def writeDictToCsv(path, dict_list, header=None, delimiter=";", encoding='UTF-8'):
     """Write a list of rows to a csv file.
 
     :param path: the absolute path to write to.
@@ -180,7 +188,7 @@ def write_dict_to_csv(path, dict_list, header=None, delimiter=";", encoding='UTF
         for dict in dict_list:
             csv_writer.writerow(dict)
 
-def zip_files_list(files_list, output_zip_file, use_basenames=True, remove_path_from_name=""):
+def zipFilesList(files_list, output_zip_file, use_basenames=True, remove_path_from_name=""):
     """
     Zip files from a list of paths.
     
@@ -204,7 +212,7 @@ def zip_files_list(files_list, output_zip_file, use_basenames=True, remove_path_
                 basename = basename.replace(remove_path_from_name, "")
             zipMe.write(file, arcname=basename, compress_type=zipfile.ZIP_DEFLATED)
 
-def get_zip_file_names(zip_file):
+def getZipFileNames(zip_file):
     """
     Get th elist of files in a zip.
     
@@ -240,7 +248,7 @@ def get_zip_file_names(zip_file):
 #             os.path.join(folder, object)
 
     
-def list_files(folder_path, extension=None):
+def listFiles(folder_path, extension=None):
     """
     List files inside a folder.
     

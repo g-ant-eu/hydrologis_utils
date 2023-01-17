@@ -3,7 +3,7 @@ Utilities to work with strings.
 """
 
 
-def check_same_name( strings, checkString ):
+def checkSameName( strings, checkString ):
     """Check if a string exists in a list of string and if necessary add a number to avoid collision.
 
     This is usefull for example when files shouldn't be overwritten.
@@ -37,7 +37,7 @@ def check_same_name( strings, checkString ):
     return string
     
 
-def split_string( string,  limit ):
+def splitString( string,  limit ):
     """Splits a string by char limit, not breaking works.
      
     :param string: the string to split.
@@ -69,7 +69,7 @@ def split_string( string,  limit ):
         start = end + 1
     return list
 
-def trim_or_pad_to_count( string, count ):
+def trimOrPadToCount( string, count ):
     """Trims or pads a string to a given count.
 
     :param string: the string to trim or pad.

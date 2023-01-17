@@ -14,7 +14,7 @@ class TestDbUtils(unittest.TestCase):
     def setUp(self):
         self.url = DbType.SQLITE_MEM.url()
 
-        self.db = SqliteDb(self.url, echo=False)
+        self.db = SqliteDb(self.url, echo=True)
         self.metadata = MetaData()
             
 
@@ -30,8 +30,6 @@ class TestDbUtils(unittest.TestCase):
         col = DbColumn(**args)
         self.assertEqual(col.name, "test")
 
-
-
     
     def test_sqlite(self):
         table_name = 'test'
@@ -42,19 +40,19 @@ class TestDbUtils(unittest.TestCase):
             Column('name', String)
         )
 
-        self.assertFalse(self.db.has_table(table_name))
+        self.assertFalse(self.db.hasTable(table_name))
 
-        self.db.create_table(test_table)
+        self.db.createTable(test_table)
 
-        self.assertTrue(self.db.has_table(table_name))
+        self.assertTrue(self.db.hasTable(table_name))
 
 
-        tables = self.db.get_tables(do_order=True)
-        self.assertEquals(len(tables), 1)
-        self.assertEquals(tables[0], table_name)
+        tables = self.db.getTables(do_order=True)
+        self.assertEqual(len(tables), 1)
+        self.assertEqual(tables[0], table_name)
 
-        cols = self.db.get_table_columns(table_name)
-        self.assertEquals(len(cols), 2)
+        cols = self.db.getTableColumns(table_name)
+        self.assertEqual(len(cols), 2)
 
         dataList = [
             {'name': 'Majeur'},
@@ -63,19 +61,19 @@ class TestDbUtils(unittest.TestCase):
         ]
         self.db.insert(test_table, dataList)
 
-        result = self.db.get_table_data(test_table)
+        result = self.db.getTableData(test_table)
         count  = 0
         for row in result:
             count += 1
         self.assertEquals(count, 3)
 
-        result = self.db.get_table_data(test_table, limit=2)
+        result = self.db.getTableData(test_table, limit=2)
         count  = 0
         for row in result:
             count += 1
         self.assertEquals(count, 2)
         
-        result = self.db.get_table_data(table_name, where="name='Orta'")
+        result = self.db.getTableData(table_name, where="name='Orta'")
         count  = 0
         for row in result:
             count += 1
@@ -85,16 +83,16 @@ class TestDbUtils(unittest.TestCase):
         sql = f"create view {view_name} as select name from {table_name}"
         self.db.execute(sql)
 
-        self.assertTrue(self.db.has_view(view_name))
+        self.assertTrue(self.db.hasView(view_name))
 
-        result = self.db.get_table_data(view_name, where="name='Orta'")
+        result = self.db.getTableData(view_name, where="name='Orta'")
         count  = 0
         for row in result:
             count += 1
         self.assertEquals(count, 1)
 
-        self.db.drop_table(view_name)
-        self.assertFalse(self.db.has_view(view_name))
+        self.db.dropTable(view_name)
+        self.assertFalse(self.db.hasView(view_name))
 
 
 
@@ -106,18 +104,18 @@ class TestDbUtils(unittest.TestCase):
             Column('geom', Geometry('POLYGON', srid=4326))
         )
 
-        self.assertFalse(self.db.has_table(table_name))
+        self.assertFalse(self.db.hasTable(table_name))
 
-        self.db.create_table(test_table)
+        self.db.createTable(test_table)
 
-        self.assertTrue(self.db.has_table(table_name))
+        self.assertTrue(self.db.hasTable(table_name))
 
 
-        tables = self.db.get_tables(do_order=True)
+        tables = self.db.getTables(do_order=True)
         self.assertEquals(len(tables), 1)
         self.assertEquals(tables[0], table_name)
 
-        cols = self.db.get_table_columns(table_name)
+        cols = self.db.getTableColumns(table_name)
         self.assertEquals(len(cols), 2)
 
         dataList = [
@@ -127,19 +125,19 @@ class TestDbUtils(unittest.TestCase):
         ]
         self.db.insert(test_table, dataList)
 
-        result = self.db.get_table_data(test_table)
+        result = self.db.getTableData(test_table)
         count  = 0
         for row in result:
             count += 1
         self.assertEquals(count, 3)
 
-        result = self.db.get_table_data(test_table, limit=2)
+        result = self.db.getTableData(test_table, limit=2)
         count  = 0
         for row in result:
             count += 1
         self.assertEquals(count, 2)
         
-        result = self.db.get_table_data(test_table, where="name='Orta'")
+        result = self.db.getTableData(test_table, where="name='Orta'")
         count  = 0
         for row in result:
             count += 1

@@ -4,7 +4,7 @@ Utilities to work with databases.
 
 from enum import Enum
 from sqlalchemy import create_engine, text, inspect
-from geoalchemy2 import Geometry, Geography
+from geoalchemy2 import Geometry
 from abc import ABC, abstractmethod
 
 
@@ -35,18 +35,12 @@ class DbType(Enum):
 
 class DbColumn:
     def __init__(self, **kwargs):
-        if 'name' in kwargs:
-            self.name = kwargs['name']
-        if 'type' in kwargs:
-            self.type = kwargs['type']
-        if 'nullable' in kwargs:
-            self.is_nullable = kwargs['nullable']
-        if 'default' in kwargs:
-            self.default = kwargs['default']
-        if 'autoincrement' in kwargs:
-            self.is_autoincrement = kwargs['autoincrement']
-        if 'comment' in kwargs:
-            self.comment = kwargs['comment']
+        self.name = kwargs.get('name')
+        self.type = kwargs.get('type')
+        self.is_nullable = kwargs.get('nullable')
+        self.default = kwargs.get('default')
+        self.is_autoincrement = kwargs.get('autoincrement')
+        self.comment = kwargs.get('comment')
         self.geoinfo = None
         if isinstance(self.type, Geometry):
             self.geoinfo = GeoInfo(self.type)
@@ -78,10 +72,10 @@ class ADb(ABC):
             url, echo=echo, future=future, encoding=encoding)
 
     @abstractmethod
-    def get_db_info(self):
+    def getDbInfo(self):
         pass
 
-    def get_tables(self, do_order=False, schema=None):
+    def getTables(self, do_order=False, schema=None):
         table_names = self.engine.table_names(schema=schema)
         if do_order:
             table_names = sorted(table_names)
@@ -90,23 +84,23 @@ class ADb(ABC):
         # insp = inspect(engine)
         # print(insp.get_table_names())
     
-    def get_views(self, do_order=False, schema=None):
+    def getViews(self, do_order=False, schema=None):
         inspector = inspect(self.engine)
         views = inspector.get_view_names()
         if do_order:
             views = sorted(views)
         return views
 
-    def has_view(self, view_name, schema=None):
-        views = self.get_views(schema=schema)
+    def hasView(self, view_name, schema=None):
+        views = self.getViews(schema=schema)
         if view_name in views:
             return True
         return False
 
-    def has_table(self, table_name, schema=None):
+    def hasTable(self, table_name, schema=None):
         return self.engine.has_table(table_name=table_name, schema=schema)
 
-    def get_table_columns(self, table_name):
+    def getTableColumns(self, table_name):
         """Get the table columns as list of DbColumn.
         
         :param table_name: the name of the table to get the columns from. 
@@ -117,7 +111,7 @@ class ADb(ABC):
         db_cols = [ DbColumn(**item) for item in columns ]
         return db_cols
     
-    def get_geometry_column(self, table_name):
+    def getGeometryColumn(self, table_name):
         """Get the geometry columns of a table.
         
         :param table_name: the name of the table to get the geometry column from. 
@@ -135,7 +129,7 @@ class ADb(ABC):
             result = conn.execute(text(sql_string))
             return result
     
-    def get_table_data(self, table_name, order_by=None, limit=None, where=None):
+    def getTableData(self, table_name, order_by=None, limit=None, where=None):
         """Return the content of a table.
 
         :param table_name: the table to list data from.
@@ -156,22 +150,22 @@ class ADb(ABC):
             result = conn.execute(text(sql))
             return result
     
-    def create_table(self, table_object):
+    def createTable(self, table_object):
         table_object.create(self.engine)
     
-    def drop_table(self, table_object):
+    def dropTable(self, table_object):
         table_object.drop(self.engine)
     
-    def drop_table(self, table_name, schema=None):
+    def dropTable(self, table_name, schema=None):
         """Drop a table or view by its name.
         """
-        geometry_col = self.get_geometry_column(table_name)
+        geometry_col = self.getGeometryColumn(table_name)
         with self.engine.connect() as conn:
             trans = conn.begin()
 
-            if self.has_view(table_name, schema=schema):
+            if self.hasView(table_name, schema=schema):
                 result = conn.execute(text(f"drop view if exists {table_name}"))
-            elif self.has_table(table_name, schema=schema):
+            elif self.hasTable(table_name, schema=schema):
                 if geometry_col:
                     conn.execute(text(f"select DropGeometryColumn('public','{table_name}', '{geometry_col.name}');"))
                 result = conn.execute(text(f"drop table if exists {table_name} cascade"))
@@ -198,13 +192,13 @@ class ADb(ABC):
             return conn.scalar(obj)
 
 class PostgresDb(ADb):
-    def get_db_info(self):
+    def getDbInfo(self):
         res = self.query(
             "SELECT VERSION() as pgversion, PostGIS_Full_Version() as pgisversion;")
         return [res.pgversion, res.pgisversion]
 
 class SqliteDb(ADb):
-    def get_db_info(self):
+    def getDbInfo(self):
         res = self.query(
             "SELECT sqlite_version() as sqliteversion;")
         return [res.pgversion, res.pgisversion]

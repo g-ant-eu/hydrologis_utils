@@ -19,12 +19,12 @@ class TestColorUtils(unittest.TestCase):
         ct = COLORTABLES[ctName]
         
         for i in range(6):
-            c1 = cprov.get_next_hex_color()
+            c1 = cprov.getNextHexColor()
             c2 = ct[i]
             self.assertEqual(c1, c2)
         
         for i in range(6):
-            c1 = cprov.get_next_hex_color()
+            c1 = cprov.getNextHexColor()
             c2 = ct[i]
             self.assertEqual(c1, c2)
     
@@ -34,7 +34,7 @@ class TestColorUtils(unittest.TestCase):
         cprov = ColorProvider(ctName)
         ct = COLORTABLES[ctName]
 
-        colors = cprov.get_hex_color_list(3)
+        colors = cprov.getHexColorList(3)
         
         for i in range(3):
             c1 = colors[i]
@@ -52,7 +52,7 @@ class TestColorUtils(unittest.TestCase):
         ]
 
         for i in [0, 1,2,3,4]:
-            darkC = ColorUtilities.get_darker_color(c, offset=i*0.2)
+            darkC = ColorUtilities.getDarkerColor(c, offset=i*0.2)
             self.assertEqual(results[i], darkC)
 
     def test_birghten(self):
@@ -66,7 +66,7 @@ class TestColorUtils(unittest.TestCase):
         ]
 
         for i in [0, 1,2,3,4]:
-            brightC = ColorUtilities.get_brighter_color(c, offset=i*0.2)
+            brightC = ColorUtilities.getBrighterColor(c, offset=i*0.2)
             self.assertEqual(results[i], brightC)
 
 

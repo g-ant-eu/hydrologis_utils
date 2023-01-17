@@ -7,7 +7,7 @@ import datetime
 PATTERN_WITH_SECONDS = "%Y-%m-%d %H:%M:%S"
 PATTERN_COMPACT = "%Y%m%d_%H%M%S"
 
-def new_datetime(string = None):
+def newDatetime(string = None):
     """Create a new datetime object.
 
     :param string: if supplied, it is used to build the datetime, else now is returned.
@@ -18,7 +18,7 @@ def new_datetime(string = None):
     else:
         return datetime.datetime.now()
 
-def new_datetime_utc(string = None):
+def newDatetimeUtc(string = None):
     """Create a new UTC datetime object.
 
     :param string: if supplied, it is used to build the datetime, else now is returned.
@@ -29,7 +29,7 @@ def new_datetime_utc(string = None):
     else:
         return datetime.datetime.utcnow()
 
-def to_string_with_seconds( dt ):
+def toStringWithSeconds( dt ):
     """Get String of format: YYYY-MM-DD HH:MM:SS from a datetime object.
 
     :param dt: the datetime object to format.
@@ -37,7 +37,7 @@ def to_string_with_seconds( dt ):
     """
     return dt.strftime(PATTERN_WITH_SECONDS)
 
-def to_string_with_minutes( dt ):
+def toStringWithMinutes( dt ):
     """Get String of format: YYYY-MM-DD HH:MM from a datetime object.
 
     :param dt: the datetime object to format.
@@ -45,7 +45,7 @@ def to_string_with_minutes( dt ):
     """
     return dt.strftime("%Y-%m-%d %H:%M")
 
-def to_string_compact( dt ):
+def toStringCompact( dt ):
     """Get String of format: YYYYMMDD_HHMMSS from a datetime object.
 
     :param dt: the datetime object to format.
@@ -53,7 +53,7 @@ def to_string_compact( dt ):
     """
     return dt.strftime(PATTERN_COMPACT)
 
-def quick_utc_to_string( unixEpoch ):
+def quickUtcToString( unixEpoch ):
     """Quick long to timestamp string formatter, UTC.
 
     :param unixEpoch: the unix epoch to convert.
@@ -63,7 +63,7 @@ def quick_utc_to_string( unixEpoch ):
 
     return dt.strftime(PATTERN_WITH_SECONDS)
 
-def quick_to_string( unixEpoch ):
+def quickToString( unixEpoch ):
     """Quick long to timestamp string formatter.
 
     :param unixEpoch: the unix epoch to convert.

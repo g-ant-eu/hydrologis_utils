@@ -1,0 +1,24 @@
+[project]
+name = "hydrologis_utils"
+version = "0.1.0"
+description = "HydroloGIS Utils Library."
+authors = [
+    {name = "Andrea Antonello", email = "andrea.antonello@gmail.com"},
+]
+dependencies = [
+    "GeoAlchemy2==0.10.2",
+    "greenlet==1.1.2",
+    "packaging==21.3",
+    "psycopg2==2.9.3",
+    "pyparsing==3.0.7",
+    "Shapely==1.8.0",
+    "SQLAlchemy==1.4.31",
+]
+requires-python = ">=3.8"
+license = {text = "MIT"}
+
+[tool.pdm]
+
+[build-system]
+requires = ["pdm-pep517>=0.12.0"]
+build-backend = "pdm.pep517.api"

@@ -6,7 +6,7 @@ class ColorUtilities():
     """
 
     @staticmethod
-    def get_darker_color(hex_color, offset=0.2):
+    def getDarkerColor(hex_color, offset=0.2):
         """ 
         Makes a darker color variant.
         
@@ -27,10 +27,10 @@ class ColorUtilities():
         Exception:
             if the color format passed is not valid.
         """
-        return ColorUtilities._process_color(hex_color, -offset)
+        return ColorUtilities._processColor(hex_color, -offset)
 
     @staticmethod
-    def get_brighter_color(hex_color, offset=0.2):
+    def getBrighterColor(hex_color, offset=0.2):
         """ 
         Makes a brighter color variant.
         
@@ -51,10 +51,10 @@ class ColorUtilities():
         Exception:
             if the color format passed is not valid.
         """
-        return ColorUtilities._process_color(hex_color, offset)
+        return ColorUtilities._processColor(hex_color, offset)
 
     @staticmethod
-    def _process_color(hex_color, lum=0.2):
+    def _processColor(hex_color, lum=0.2):
         if len(hex_color) != 7:  
             raise Exception("The hex format needs to be like #FF0000.")  
 
@@ -89,7 +89,7 @@ class ColorProvider():
         self.index = 0
         self.max = len(self.colorTable)
 
-    def get_next_hex_color(self):
+    def getNextHexColor(self):
         """
         Get a color from a table. Starts from begin when reaching the end.
         
@@ -104,7 +104,7 @@ class ColorProvider():
         self.index += 1
         return color
     
-    def get_hex_color_list(self, size):
+    def getHexColorList(self, size):
         """
         Get a list of hex colors.
         
@@ -120,7 +120,7 @@ class ColorProvider():
         """
         list = []
         for i in range(size):
-            list.append(self.get_next_hex_color())
+            list.append(self.getNextHexColor())
         return list
 
 class ColorTableNames(enum.Enum):
