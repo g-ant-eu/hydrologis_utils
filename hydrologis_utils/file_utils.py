@@ -21,10 +21,12 @@ def exists(path):
     return os.path.exists(path)
 
 def createTmpFile(mode = "w+"):
-    """Create a temp file, by default in text write mode.
+    """Create a temp file path.
+
+    The file path will not yet exist when returning from this method.
 
     :param mode: the file mode to use.
-    :return: the created file, which needs to be closed by the user.
+    :return: the temp file path.
     """
     f = tempfile.NamedTemporaryFile(mode = mode)
     path = f.name
@@ -38,6 +40,13 @@ def createTmpFolder():
     """
     path = tempfile.mkdtemp()
     return path
+
+def createFolder(path):
+    """Create a folder.
+    
+    :param  path: the path to create the folder with.
+    """
+    os.makedirs(path)
 
 def deleteFolder(folder_path):
     """Delete a folder and its content.
