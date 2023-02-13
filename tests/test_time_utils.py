@@ -47,5 +47,14 @@ class TestTimeutils(unittest.TestCase):
 
         self.assertEqual(string, str)         
 
+    def test_epoch_millis(self):
+        string = self.CHECKDATE
+        dt = newDatetime(string)
+        millis = toEpochInMillis(dt)
+        self.assertEqual(millis, 1640343600000)
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
