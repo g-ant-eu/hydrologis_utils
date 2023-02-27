@@ -4,8 +4,10 @@ Utilities to work with databases.
 
 from enum import Enum
 from sqlalchemy import create_engine, text, inspect
+from sqlalchemy.event import listen
 from geoalchemy2 import Geometry
 from abc import ABC, abstractmethod
+from .os_utils import isLinux
 
 
 class DbType(Enum):
@@ -13,6 +15,7 @@ class DbType(Enum):
         return self._value_[index]
 
     SQLITE_MEM = ["sqlite_mem", "sqlite+pysqlite:///:memory:"]
+    SQLITE = ["sqlite", "sqlite://"]
     POSTGRESQL = ["postgres", "postgresql+psycopg2://"] # needs psycopg2 available
 
     def label(self):
@@ -70,6 +73,9 @@ class ADb(ABC):
         self.url = url
         self.engine = create_engine(
             url, echo=echo, future=future, encoding=encoding)
+        self.dynamicLibPath = None
+        if isLinux():
+            self.dynamicLibPath = '/usr/lib/x86_64-linux-gnu/mod_spatialite.so';
 
     @abstractmethod
     def getDbInfo(self):
@@ -202,3 +208,13 @@ class SqliteDb(ADb):
         res = self.query(
             "SELECT sqlite_version() as sqliteversion;")
         return [res.pgversion, res.pgisversion]
+    
+
+    def initSpatialite(self, dynamicLibPath = None):
+        if dynamicLibPath:
+            self.dynamicLibPath = dynamicLibPath
+        listen(self.engine, 'connect', self.load_spatialite)
+
+    def load_spatialite(self, dbapi_conn, connection_record):
+        dbapi_conn.enable_load_extension(True)
+        dbapi_conn.load_extension(self.dynamicLibPath)

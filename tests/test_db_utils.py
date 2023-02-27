@@ -183,6 +183,19 @@ class TestDbUtils(unittest.TestCase):
         # #     wkt = db.scalar(row['geom'].ST_AsEWKT())
         # #     print(f"{row[0]} - {row[1]} - {area} - {wkt}")
         
+
+    # def test_sqlite_spatialite(self):        
+    #     path = ""
+    #     self.url = DbType.SQLITE.url(dbname=path)
+    #     self.db = SqliteDb(self.url, echo=True)
+    #     self.db.initSpatialite()
+
+    #     tables = self.db.getTables()
+    #     for t in tables:
+    #         print(t)
+
+
+
   
 
 if __name__ == "__main__":
