@@ -4,6 +4,7 @@ Utilities to work with databases.
 
 from enum import Enum
 from sqlalchemy import create_engine, text, inspect
+from sqlalchemy.sql import select, func
 from sqlalchemy.event import listen
 from geoalchemy2 import Geometry
 from abc import ABC, abstractmethod
@@ -156,6 +157,12 @@ class ADb(ABC):
             result = conn.execute(text(sql))
             return result
     
+    def connect(self):
+        """
+        Get the connection object, if necessary to handle closing manually.
+        """
+        return self.engine.connect()
+    
     def createTable(self, table_object):
         table_object.create(self.engine)
     
@@ -214,6 +221,9 @@ class SqliteDb(ADb):
         if dynamicLibPath:
             self.dynamicLibPath = dynamicLibPath
         listen(self.engine, 'connect', self.load_spatialite)
+
+        with self.engine.connect() as conn:
+            conn.execute(select([func.InitSpatialMetaData()]))
 
     def load_spatialite(self, dbapi_conn, connection_record):
         dbapi_conn.enable_load_extension(True)

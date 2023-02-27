@@ -61,6 +61,12 @@ class TestDbUtils(unittest.TestCase):
         ]
         self.db.insert(test_table, dataList)
 
+        with self.db.connect() as conn:
+            result = conn.execute("select * from test")
+        
+        for row in result:
+            print(row['name'])
+
         result = self.db.getTableData(test_table)
         count  = 0
         for row in result:
