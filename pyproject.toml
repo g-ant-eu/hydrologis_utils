@@ -1,6 +1,6 @@
 [project]
 name = "hydrologis_utils"
-version = "0.1.1"
+version = "0.1.2"
 description = "HydroloGIS Utils Library."
 authors = [
     {name = "Andrea Antonello", email = "andrea.antonello@gmail.com"},
@@ -9,7 +9,7 @@ dependencies = [
     "GeoAlchemy2==0.10.2",
     "greenlet==1.1.2",
     "packaging==21.3",
-    "psycopg2==2.9.3",
+    "psycopg2-binary==2.9.3",
     "pyparsing==3.0.7",
     "Shapely==1.8.0",
     "SQLAlchemy==1.4.31",
