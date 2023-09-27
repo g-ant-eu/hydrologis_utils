@@ -1,18 +1,18 @@
 [project]
 name = "hydrologis_utils"
-version = "0.1.2"
+version = "0.1.5"
 description = "HydroloGIS Utils Library."
 authors = [
     {name = "Andrea Antonello", email = "andrea.antonello@gmail.com"},
 ]
 dependencies = [
-    "GeoAlchemy2>=0.10.2",
-    "greenlet>=1.1.2",
-    "packaging>=21.3",
-    "psycopg2-binary>=2.9.3",
-    "pyparsing>=3.0.7",
-    "Shapely>=1.8.0",
-    "SQLAlchemy>=1.4.31",
+    "greenlet>=2.0.2",
+    "packaging>=23.1",
+    "psycopg2-binary>=2.9.7",
+    "pyparsing>=3.1.1",
+    "Shapely>=2.0.1",
+    "SQLAlchemy>=2.0.21",
+    "GeoAlchemy2>=0.14.1",
 ]
 requires-python = ">=3.8"
 license = {text = "MIT"}

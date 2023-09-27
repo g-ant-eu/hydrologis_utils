@@ -2,7 +2,7 @@
 Utilities to work with time.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 PATTERN_WITH_SECONDS = "%Y-%m-%d %H:%M:%S"
 PATTERN_COMPACT = "%Y%m%d_%H%M%S"
@@ -25,7 +25,7 @@ def newDatetimeUtc(string:str = None) -> datetime:
     :return: the datetime object.
     """
     if string:
-        return datetime.strptime(string, PATTERN_WITH_SECONDS).replace(tzinfo=datetime.timezone.utc)
+        return datetime.strptime(string, PATTERN_WITH_SECONDS).replace(tzinfo=timezone.utc)
     else:
         return datetime.utcnow()
 
@@ -59,7 +59,7 @@ def quickUtcToString( unixEpoch:int ) -> str:
     :param unixEpoch: the unix epoch to convert.
     :return: the timestamp string as yyyy-MM-dd HH:mm:ss
     """
-    dt = datetime.fromtimestamp(unixEpoch, datetime.timezone.utc)
+    dt = datetime.fromtimestamp(unixEpoch, timezone.utc)
 
     return dt.strftime(PATTERN_WITH_SECONDS)
 

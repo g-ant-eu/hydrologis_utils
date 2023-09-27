@@ -5,11 +5,17 @@ Utilities to work with databases.
 from enum import Enum
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.sql import select, func
+from sqlalchemy import create_engine, MetaData, Table, select
 from sqlalchemy.event import listen
 from geoalchemy2 import Geometry
 from abc import ABC, abstractmethod
-from .os_utils import isLinux
+from .os_utils import isLinux, isWindows, isMacos
+from geoalchemy2 import load_spatialite_gpkg, load_spatialite
+from sqlalchemy.event import listen
+import os
 
+import logging
+logger = logging.getLogger(__name__)
 
 class DbType(Enum):
     def __getitem__(self, index):
@@ -17,6 +23,7 @@ class DbType(Enum):
 
     SQLITE_MEM = ["sqlite_mem", "sqlite+pysqlite:///:memory:"]
     SQLITE = ["sqlite", "sqlite://"]
+    GPKG = ["gpkg", "gpkg://"]
     POSTGRESQL = ["postgres", "postgresql+psycopg2://"] # needs psycopg2 available
 
     def label(self):
@@ -70,20 +77,31 @@ class GeoInfo:
     
 
 class ADb(ABC):
-    def __init__(self, url, encoding="utf-8", echo=True, future=False):
+    def __init__(self, url, encoding=None, echo=True):
+        self.supportsSchema = True
         self.url = url
-        self.engine = create_engine(
-            url, echo=echo, future=future, encoding=encoding)
+        if encoding:
+            self.engine = create_engine(
+                f"{url}?charset={encoding}", echo=echo)
+        else:
+            self.engine = create_engine(
+                url, echo=echo)
         self.dynamicLibPath = None
-        if isLinux():
-            self.dynamicLibPath = '/usr/lib/x86_64-linux-gnu/mod_spatialite.so';
+        self.metadata = MetaData()
+        # self.metadata.reflect(bind=self.engine)
+
+
 
     @abstractmethod
     def getDbInfo(self):
         pass
 
     def getTables(self, do_order=False, schema=None):
-        table_names = self.engine.table_names(schema=schema)
+        if self.supportsSchema:
+            table_names = self.engine.table_names(schema=schema)
+        else:
+            table_names = self.engine.table_names()
+
         if do_order:
             table_names = sorted(table_names)
         return table_names
@@ -105,7 +123,10 @@ class ADb(ABC):
         return False
 
     def hasTable(self, table_name, schema=None):
-        return self.engine.has_table(table_name=table_name, schema=schema)
+        if self.supportsSchema:
+            return self.engine.has_table(table_name=table_name, schema=schema)
+        else:
+            return self.engine.has_table(table_name=table_name)
 
     def getTableColumns(self, table_name):
         """Get the table columns as list of DbColumn.
@@ -144,18 +165,58 @@ class ADb(ABC):
         :param limit: optional parameter to limit the return count.
         :param where: optional where clause.
         """
-        sql = f"select * from {table_name}"
 
+        # Replace 'your_table_name' with the actual name of your table
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
+
+        stmt = select(table)
         if where:
-            sql += " where " + where
+            stmt = stmt.where(text(where))
         if order_by:
-            sql += " order by " + order_by
+            stmt = stmt.order_by(text(order_by))
         if limit:
-            sql += f" limit {limit}"
+            stmt = stmt.limit(limit)
+
+        with self.engine.connect() as conn:
+            result = conn.execute(stmt)
+            return result
+
+
+        # cols = self.getTableColumns(table_name)
+        # cols = [c.name for c in cols]
+        # sql = f"select {','.join(cols)} from {table_name}"
+
+        # if where:
+        #     sql += " where " + where
+        # if order_by:
+        #     sql += " order by " + order_by
+        # if limit:
+        #     sql += f" limit {limit}"
+
+        # dataList = []
+        # with self.engine.connect() as conn:
+        #     result = conn.execute(text(sql))
+
+        #     for row in result:
+        #         i = 0
+        #         item = {}
+        #         for col in cols:
+        #             item[col] = row[i]
+        #             i=i+1
+        #         dataList.append(item)
+                
+        # return dataList
+    
+    def getRecordCount(self, table_name):
+        """Return the count of the records of a table.
+
+        :param table_name: the table to list data from.
+        """
+        sql = f"select count(*) from {table_name}"
 
         with self.engine.connect() as conn:
             result = conn.execute(text(sql))
-            return result
+            return result.first()[0]
     
     def connect(self):
         """
@@ -211,20 +272,55 @@ class PostgresDb(ADb):
         return [res.pgversion, res.pgisversion]
 
 class SqliteDb(ADb):
+
+    # init class calling super
+    def __init__(self, url, encoding="utf-8", echo=True):
+        super().__init__(url, encoding=encoding, echo=echo)
+        self.supportsSchema = False
+
     def getDbInfo(self):
         res = self.query(
             "SELECT sqlite_version() as sqliteversion;")
         return [res.pgversion, res.pgisversion]
     
+def _checkSpatialiteLibraryPath(dynamicLibPath):
+    libspath = os.environ.get('SPATIALITE_LIBRARY_PATH')
+    if not libspath:
+        if isLinux():
+            if not dynamicLibPath:
+                dynamicLibPath = '/usr/lib/x86_64-linux-gnu/mod_spatialite.so';
+        elif isWindows():
+            if not dynamicLibPath:
+                dynamicLibPath = 'C:/Program Files/SpatiaLite/mod_spatialite.dll';
+        elif isMacos():
+            if not dynamicLibPath:
+                dynamicLibPath = '/usr/local/lib/mod_spatialite.dylib';
+        os.environ['SPATIALITE_LIBRARY_PATH'] = dynamicLibPath
+        logger.warning(f"SPATIALITE_LIBRARY_PATH not set, trying to set it automatically to {os.environ['SPATIALITE_LIBRARY_PATH']}.")
 
-    def initSpatialite(self, dynamicLibPath = None):
-        if dynamicLibPath:
-            self.dynamicLibPath = dynamicLibPath
-        listen(self.engine, 'connect', self.load_spatialite)
 
-        with self.engine.connect() as conn:
-            conn.execute(select([func.InitSpatialMetaData()]))
+class GpkgDb(ADb):
+    def __init__(self, url, encoding="utf-8", echo=True):
+        super().__init__(url, encoding=encoding, echo=echo)
+        self.supportsSchema = False
+        _checkSpatialiteLibraryPath(self.dynamicLibPath)
+        listen(self.engine, "connect", load_spatialite_gpkg)
 
-    def load_spatialite(self, dbapi_conn, connection_record):
-        dbapi_conn.enable_load_extension(True)
-        dbapi_conn.load_extension(self.dynamicLibPath)
+    def getDbInfo(self):
+        res = self.query(
+            "SELECT sqlite_version() as sqliteversion;")
+        return [res.pgversion, res.pgisversion]
+
+class SpatialiteDb(ADb):
+    def __init__(self, url, encoding="utf-8", echo=True, dynamicLibPath=None):
+        super().__init__(url, encoding=encoding, echo=echo)
+        self.dynamicLibPath = dynamicLibPath
+        self.supportsSchema = False
+        _checkSpatialiteLibraryPath()
+        listen(self.engine, 'connect', load_spatialite)
+
+    def getDbInfo(self):
+        res = self.query(
+            "SELECT sqlite_version() as sqliteversion;")
+        return [res.pgversion, res.pgisversion]
+    
