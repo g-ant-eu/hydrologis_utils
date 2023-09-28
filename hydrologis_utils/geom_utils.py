@@ -18,7 +18,50 @@ class HyGeomUtils():
     
 
     @staticmethod
-    def splitLineEquidistant(line:LineString, distanceDelta:float = 3.0) -> list:
+    def splitLineEquidistant(line:LineString, segmentLength:float = 3.0) -> list:
+        if not isinstance(line, LineString):
+            raise Exception("The input geometry must be a LineString.")
+        lineCoords = list(line.coords)
+        
+        lastSegment = [] # Coordinates
+        segments = [] # LineString segments
+        accumulatedLength = 0.0
+
+        i = 0
+        while i < len(lineCoords)-1:
+            c1 = lineCoords[i]
+            c2 = lineCoords[i+1]
+
+            lastSegment.append(c1)
+
+            length = Point(c1).distance(Point(c2))
+            if length + accumulatedLength >= segmentLength:
+                offsetLength = segmentLength - accumulatedLength
+                ratio = offsetLength / length
+                dx = c2[0] - c1[0]
+                dy = c2[1] - c1[1]
+
+                segmentationPoint = (c1[0] + (dx * ratio), c1[1] + (dy * ratio))
+                lastSegment.append(segmentationPoint)
+                segments.append(LineString(lastSegment))
+
+                lastSegment = []
+                accumulatedLength = 0.0
+                if not segmentationPoint in lineCoords:
+                    lineCoords.insert(i+1, segmentationPoint)
+            else:
+                accumulatedLength += length
+
+            i += 1
+
+        lastSegment.append(lineCoords[-1])
+        segments.append(LineString(lastSegment))
+        return segments
+            
+
+        
+    @staticmethod
+    def splitLineEquidistantShply(line:LineString, distanceDelta:float = 3.0) -> list:
         if not isinstance(line, LineString):
             raise Exception("The input geometry must be a LineString.")
         # generate the equidistant points

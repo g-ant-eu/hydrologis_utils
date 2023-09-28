@@ -46,6 +46,7 @@ class TestGeomutils(unittest.TestCase):
         wkt = "MULTILINESTRING ((680372.6569 4936651.3185 0,680385.5099 4936690.8508 0,680394.8311 4936687.6387 0,680382.0701 4936648.0783 0,680372.6569 4936651.3185 0))"
         geom = HyGeomUtils.fromWkt(wkt)
         geom = HyGeomUtils.joinLines(geom)
+        geom = HyGeomUtils.convert2D(geom)
 
         delta = geom.length % 3
         pieces = (geom.length-delta)/3 + 1
