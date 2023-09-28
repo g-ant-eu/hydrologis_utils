@@ -5,8 +5,7 @@ Utilities to work with multithreading.
 import concurrent.futures
 import multiprocessing
 import threading
-from multiprocessing import Process, Manager, Pool
-from dill import dumps, loads
+from multiprocessing import Pool
 
 class HyThreadingPool():
     def __init__(self, task, threads = None, name = "hythread") -> None:
