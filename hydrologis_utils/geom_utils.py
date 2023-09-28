@@ -52,5 +52,8 @@ class HyGeomUtils():
         elif isinstance(lines, GeometryCollection):
             lines = MultiLineString([line for line in lines.geoms])
         
+        if isinstance(lines, MultiLineString) and len(lines.geoms) == 1:
+            return lines.geoms[0]
+
         mergedLines = linemerge(lines)
         return mergedLines
