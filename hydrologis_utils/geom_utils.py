@@ -19,15 +19,20 @@ class HyGeomUtils():
 
     @staticmethod
     def splitLineEquidistant(line:LineString, distanceDelta:float = 3.0) -> list:
+        if not isinstance(line, LineString):
+            raise Exception("The input geometry must be a LineString.")
         # generate the equidistant points
         distances = np.arange(0, line.length, distanceDelta)
         interpPoints = [line.interpolate(distance) for distance in distances]
-        interpPoints.append(line.boundary.geoms[1])
+        # then add the last coordinate point
+        lastCoord = list(line.coords)[-1]
+        interpPoints.append(Point(lastCoord))
         points = MultiPoint(interpPoints)
         segmentsGc = split(snap(line, points, 1.0e-5), points)
 
         linesList = [line for line in segmentsGc.geoms]
         return linesList
+
     
     @staticmethod
     def fromWkt(wkt:str) -> BaseGeometry:

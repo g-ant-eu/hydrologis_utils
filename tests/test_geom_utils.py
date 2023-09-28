@@ -37,12 +37,23 @@ class TestGeomutils(unittest.TestCase):
         wkt = "LINESTRING (0 0, 10 0, 10 10, 18 10)"
         geom = HyGeomUtils.fromWkt(wkt)
         lines = HyGeomUtils.splitLineEquidistant(geom, 5)
-
         self.assertEquals(len(lines), 6)
 
         for line in lines[:-1]:
             self.assertEquals(line.length, 5)
         self.assertEquals(lines[-1].length, 3)
+
+        wkt = "MULTILINESTRING ((680372.6569 4936651.3185 0,680385.5099 4936690.8508 0,680394.8311 4936687.6387 0,680382.0701 4936648.0783 0,680372.6569 4936651.3185 0))"
+        geom = HyGeomUtils.fromWkt(wkt)
+        geom = HyGeomUtils.joinLines(geom)
+
+        delta = geom.length % 3
+        pieces = (geom.length-delta)/3 + 1
+        lines = HyGeomUtils.splitLineEquidistant(geom, 3)
+        self.assertEquals(len(lines), pieces)
+
+        
+
         
     # test joinLines method
     def test_join_lines(self):
