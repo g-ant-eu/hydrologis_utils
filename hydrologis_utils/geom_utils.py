@@ -105,3 +105,20 @@ class HyGeomUtils():
 
         mergedLines = linemerge(lines)
         return mergedLines
+    
+    @staticmethod
+    def toMultiLineString(geom:BaseGeometry) -> BaseGeometry:
+        if isinstance(geom, LineString):
+            geom = MultiLineString([geom])
+        elif isinstance(geom, MultiLineString):
+            geom = geom
+        elif isinstance(geom, Polygon):
+            # extract the exterior ring
+            geom = MultiLineString([geom.exterior])
+        elif isinstance(geom, MultiPolygon):
+            # extract the exterior rings
+            geom = MultiLineString([poly.exterior for poly in geom.geoms])
+        else:
+            raise Exception("The input geometry must be a LineString/MultiLineString or Polygon/Multipolygon.")
+        return geom
+    
