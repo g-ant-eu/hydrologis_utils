@@ -5,6 +5,7 @@ from geoalchemy2 import Geometry
 from geoalchemy2.shape import from_shape, to_shape
 from sqlalchemy.sql import text
 import shapely.wkb as wkb
+import tempfile
 
 
 
@@ -152,56 +153,88 @@ class TestDbUtils(unittest.TestCase):
     #         count += 1
     #     self.assertEquals(count, 1)
         
+
+    # def test_sqlite_geopackage(self):    
+    #     # get path of file inside tests folder
+
+    #     current_dir = os.path.dirname(os.path.abspath(__file__))
+    #     path = os.path.join(current_dir, 'samples', 'gdal_sample.gpkg')
+    #     url = DbType.GPKG.url(dbname=path)
+    #     db = GpkgDb(url, echo=False)
+
+    #     table = "point2d"
+    #     gc = db.getGeometryColumn(table)
+    #     self.assertEqual(gc.name, "geom")
+    #     self.assertEqual(gc.geoinfo.srid, -1)
+
+    #     count = db.getRecordCount(table)
+    #     self.assertEqual(count, 1)
+
+
+    #     with db.connect() as conn:
+    #         result = conn.execute(text(f"select geom from {table}"))
+    #         geom = result.first()[0]
+    #         sgeom = wkb.loads(geom, hex=True)
+            
+    #         print(type(geom))
+            
+    def test_spatialite_generation_and_inserts(self):
+        # create a spatialite file in the os tmp folder
+        tmp_dir = tempfile.gettempdir()
+        dbPath = os.path.join(tmp_dir, "test_spatialite.sqlite")
+        if os.path.exists(dbPath):
+            os.remove(dbPath)
+        print(dbPath)
+
+        url = DbType.SPATIALITE.url(dbname=dbPath)
+        db = SpatialiteDb(url, echo=False)
+
+        # create a spatial lines table
+        table_name = "lines"
+        table = Table(table_name, self.metadata,
+            Column('id', Integer, primary_key=True),
+            Column('name', String),
+            Column('geom', Geometry('LINESTRING', srid=4326))
+        )
+        db.createTable(table)
+
+        # insert many lines to test performance
+        number = 10000
+        for i in range(0, number):
+            line = {
+                "name": f"line {i}",
+                "geom": f"SRID=4326;LINESTRING({i} {i},{i+1} {i+1})"
+            }
+            rowcount = db.insert(table, line)
+            self.assertEqual(rowcount, 1)
         
+        data = db.getTableData(table_name)
+        self.assertEqual(len(data), number)
+
+        table_name = "bulklines"
+        table = Table(table_name, self.metadata,
+            Column('id', Integer, primary_key=True),
+            Column('name', String),
+            Column('geom', Geometry('LINESTRING', srid=4326))
+        )
+        db.createTable(table)
+
+        # insert many lines to test performance
+        lines = []
+        for i in range(0, number):
+            line = {
+                "name": f"line {i}",
+                "geom": f"SRID=4326;LINESTRING({i} {i},{i+1} {i+1})"
+            }
+            lines.append(line)
+
+        rowcount = db.builkInsert(table, lines)
+        self.assertEqual(rowcount, number)
 
 
-    # def test_sqlite_spatialite(self):        
-    #     path = ""
-    #     self.url = DbType.SQLITE.url(dbname=path)
-    #     self.db = SqliteDb(self.url, echo=True)
-    #     self.db.initSpatialite()
-
-    #     tables = self.db.getTables()
-    #     for t in tables:
-    #         print(t)
-
-    def test_sqlite_geopackage(self):    
-        # get path of file inside tests folder
-
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(current_dir, 'samples', 'gdal_sample.gpkg')
-        url = DbType.GPKG.url(dbname=path)
-        db = GpkgDb(url, echo=False)
-
-        table = "point2d"
-        gc = db.getGeometryColumn(table)
-        self.assertEqual(gc.name, "geom")
-        self.assertEqual(gc.geoinfo.srid, -1)
-
-        count = db.getRecordCount(table)
-        self.assertEqual(count, 1)
+        os.remove(dbPath)
 
 
-        with db.connect() as conn:
-            result = conn.execute(text(f"select geom from {table}"))
-            geom = result.first()[0]
-            sgeom = wkb.loads(geom, hex=True)
-            
-            print(type(geom))
-            
-
-
-
-
-        # tables = db.getTables()
-        # for t in tables:
-        #     print(t)
-        # if db.hasTable("g_tratte"):
-        #     data = db.getTableData("g_tratte", limit=1)
-        #     for row in data:
-        #         idsap = row["IDSAP"]
-
-        #         print(idsap)
 
   
 

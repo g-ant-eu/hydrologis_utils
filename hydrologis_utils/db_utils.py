@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from .os_utils import isLinux, isWindows, isMacos
 from geoalchemy2 import load_spatialite_gpkg, load_spatialite
 from sqlalchemy.event import listen
+from sqlalchemy.orm import sessionmaker
 import os
 
 import logging
@@ -23,6 +24,7 @@ class DbType(Enum):
 
     SQLITE_MEM = ["sqlite_mem", "sqlite+pysqlite:///:memory:"]
     SQLITE = ["sqlite", "sqlite://"]
+    SPATIALITE = ["spatialite", "sqlite://"]
     GPKG = ["gpkg", "gpkg://"]
     POSTGRESQL = ["postgres", "postgresql+psycopg2://"] # needs psycopg2 available
 
@@ -179,7 +181,7 @@ class ADb(ABC):
 
         with self.engine.connect() as conn:
             result = conn.execute(stmt)
-            return result
+            return result.all()
 
 
         # cols = self.getTableColumns(table_name)
@@ -249,7 +251,20 @@ class ADb(ABC):
     def insert(self, table_object, data_list):
         with self.engine.connect() as conn:
             result = conn.execute(table_object.insert(), data_list)
-            return result
+            conn.commit()
+            return result.rowcount
+        
+    def builkInsert(self, table_object, data_list):
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+
+        insertStmt = table_object.insert().values(data_list)
+        result = session.execute(insertStmt)
+        session.commit()
+        session.close()
+
+        count = result.rowcount
+        return count
     
     def select(self, select_object):
         with self.engine.connect() as conn:
@@ -316,7 +331,7 @@ class SpatialiteDb(ADb):
         super().__init__(url, encoding=encoding, echo=echo)
         self.dynamicLibPath = dynamicLibPath
         self.supportsSchema = False
-        _checkSpatialiteLibraryPath()
+        _checkSpatialiteLibraryPath(self.dynamicLibPath)
         listen(self.engine, 'connect', load_spatialite)
 
     def getDbInfo(self):
