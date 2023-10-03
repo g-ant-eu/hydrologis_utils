@@ -13,6 +13,7 @@ from .os_utils import isLinux, isWindows, isMacos
 from geoalchemy2 import load_spatialite_gpkg, load_spatialite
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 import os
 
 import logging
@@ -155,6 +156,10 @@ class ADb(ABC):
                 return dbcolumn
 
     def execute(self, sql_string):
+        """Execute a sql statement.
+
+        :param sql_string: the sql statement to execute.
+        """
         with self.engine.connect() as conn:
             result = conn.execute(text(sql_string))
             return result
@@ -248,23 +253,40 @@ class ADb(ABC):
             trans.commit()
             return result
     
-    def insert(self, table_object, data_list):
-        with self.engine.connect() as conn:
-            result = conn.execute(table_object.insert(), data_list)
-            conn.commit()
+    def insertOrmWithParams(self, table_object, data):
+        """
+        Execute an insert statement with parameters in single or bulk mode.
+
+        :param table_object: the table object to insert into.
+        :param data: the data to insert. Can be a dict of data or a list of dicts for bulk mode.
+        """
+        with Session(self.engine) as session:
+            insertStmt = table_object.insert().values(data)
+            result = session.execute(insertStmt)
+            session.commit()
             return result.rowcount
-        
-    def builkInsert(self, table_object, data_list):
-        Session = sessionmaker(bind=self.engine)
-        session = Session()
 
-        insertStmt = table_object.insert().values(data_list)
-        result = session.execute(insertStmt)
-        session.commit()
-        session.close()
 
-        count = result.rowcount
-        return count
+    def insertSqlWithParams(self, sql_string, data):
+        """Execute an insert sql statement with parameters in single or bulk mode.
+
+        Make sure to use proper substitutions:
+
+            INSERT INTO table (id, value) VALUES (:id, :value)
+
+        with dicts:
+            
+            [{"id":1, "value":"v1"}, {"id":2, "value":"v2"}]
+            
+
+        :param sql_string: the sql statement to execute.
+        :param data: the data to insert. Can be a dict of data or a list of dicts for bulk mode.
+        """
+
+        with Session(self.engine) as session:
+            result = session.execute(text(sql_string), data)
+            session.commit()
+            return result.rowcount
     
     def select(self, select_object):
         with self.engine.connect() as conn:

@@ -184,7 +184,7 @@ class TestDbUtils(unittest.TestCase):
         dbPath = os.path.join(tmp_dir, "test_spatialite.sqlite")
         if os.path.exists(dbPath):
             os.remove(dbPath)
-        print(dbPath)
+        number = 10000
 
         url = DbType.SPATIALITE.url(dbname=dbPath)
         db = SpatialiteDb(url, echo=False)
@@ -199,13 +199,12 @@ class TestDbUtils(unittest.TestCase):
         db.createTable(table)
 
         # insert many lines to test performance
-        number = 10000
         for i in range(0, number):
             line = {
                 "name": f"line {i}",
                 "geom": f"SRID=4326;LINESTRING({i} {i},{i+1} {i+1})"
             }
-            rowcount = db.insert(table, line)
+            rowcount = db.insertOrmWithParams(table, line)
             self.assertEqual(rowcount, 1)
         
         data = db.getTableData(table_name)
@@ -228,7 +227,32 @@ class TestDbUtils(unittest.TestCase):
             }
             lines.append(line)
 
-        rowcount = db.builkInsert(table, lines)
+        rowcount = db.insertOrmWithParams(table, lines)
+        self.assertEqual(rowcount, number)
+
+
+        # now do the same with execute without table
+
+        table_name = "execlines"
+        table = Table(table_name, self.metadata,
+            Column('id', Integer, primary_key=True),
+            Column('name', String),
+            Column('geom', Geometry('LINESTRING', srid=4326))
+        )
+        db.createTable(table)
+
+        # insert many lines to test performance
+        lines = []
+        for i in range(0, number):
+            line = {
+                "name": f"line {i}",
+                "geom": f"LINESTRING({i} {i},{i+1} {i+1})"
+            }
+            lines.append(line)
+
+        sql = f"INSERT INTO {table_name} (name, geom) VALUES (:name, ST_geomfromtext(:geom, 4326))"
+
+        rowcount = db.insertSqlWithParams(sql, lines)
         self.assertEqual(rowcount, number)
 
 
