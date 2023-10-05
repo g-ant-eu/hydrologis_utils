@@ -13,11 +13,15 @@ class TestGeomutils(unittest.TestCase):
         # convert to shapely geometry
         geom = HyGeomUtils.fromWkt(wkt)
 
+        wkt = "SRID=4326;LINESTRING (30 10, 10 30, 40 40)"
+        geom1 = HyGeomUtils.fromWkt(wkt)
+
         wkb = HyGeomUtils.toWkb(geom)
         # convert back to geom
         geom2 = HyGeomUtils.fromWkb(wkb)
         
         self.assertEqual(geom, geom2)
+        self.assertEqual(geom1, geom2)
 
 
     def test_geom_2d(self):
@@ -83,7 +87,19 @@ class TestGeomutils(unittest.TestCase):
         self.assertEqual(len(mergedLine.geoms), 2)
 
 
-    
+    def test_to_geojson(self):
+        # create a wkt of a Linstring
+        wkt = "SRID=4326;MULTILINESTRING ((10.9823496053121 44.1270461245985, 10.9826260483698 44.1271185726098, 10.9827005016574 44.1271569262385, 10.9828179452725 44.1272174274885, 10.9830390596593 44.127384537057))"
+        # convert to shapely geometry
+        geom = HyGeomUtils.fromWkt(wkt)
+
+        # convert to geojson
+        geojson = HyGeomUtils.toGeoJson(geom)
+
+        # convert back to geom
+        geom2 = HyGeomUtils.fromGeoJson(geojson)
+        
+        self.assertEqual(geom, geom2)
 
 
     

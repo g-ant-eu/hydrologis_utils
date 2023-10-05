@@ -79,11 +79,23 @@ class HyGeomUtils():
     
     @staticmethod
     def fromWkt(wkt:str) -> BaseGeometry:
-        return loads(wkt)
+        if wkt[:4].upper().startswith("SRID"):
+            # split to get srid and geom
+            srid, geom = wkt.split(";")
+            geom = loads(geom)
+            srid = int(srid.split("=")[1])
+            geom = shapely.set_srid(geom, srid)
+            return geom
+        else:
+            return loads(wkt)
     
     @staticmethod
     def toWkt(geom:BaseGeometry) -> str:
-        return dumps(geom)
+        geom = dumps(geom)
+        srid = shapely.get_srid(geom)
+        if srid is not None:
+            geom = "SRID={};{}".format(srid, geom)
+        return geom
     
     @staticmethod
     def toWkb(geom:BaseGeometry) -> bytes:
@@ -92,6 +104,14 @@ class HyGeomUtils():
     @staticmethod
     def fromWkb(wkb:bytes) -> BaseGeometry:
         return wkb_loads(wkb)
+    
+    @staticmethod
+    def toGeoJson(geom:BaseGeometry, indent:int=None) -> str:
+        return shapely.to_geojson(geom, indent=indent)
+    
+    @staticmethod
+    def fromGeoJson(geojson:str) -> BaseGeometry:
+        return shapely.from_geojson(geojson)
     
     @staticmethod
     def joinLines(lines:any) -> any:
