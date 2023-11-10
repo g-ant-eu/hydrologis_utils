@@ -63,13 +63,13 @@ class TestDbUtils(unittest.TestCase):
             {'name': 'Garde'},
             {'name': 'Orta'}
         ]
-        self.db.insert(test_table, dataList)
+        self.db.insertOrmWithParams(test_table, dataList)
 
-        with self.db.connect() as conn:
-            result = conn.execute("select * from test")
+        result = self.db.execute("select id, name from test order by name")
         
         for row in result:
-            print(row['name'])
+            self.assertEquals(row[1], 'Garde')
+            break
 
         result = self.db.getTableData(test_table)
         count  = 0

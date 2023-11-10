@@ -99,11 +99,9 @@ class ADb(ABC):
     def getDbInfo(self):
         pass
 
-    def getTables(self, do_order=False, schema=None):
-        if self.supportsSchema:
-            table_names = self.engine.table_names(schema=schema)
-        else:
-            table_names = self.engine.table_names()
+    def getTables(self, do_order=False, schema=None) -> list[str]:
+        inspector = inspect(self.engine)
+        table_names = inspector.get_table_names(schema=schema)
 
         if do_order:
             table_names = sorted(table_names)
@@ -119,19 +117,17 @@ class ADb(ABC):
             views = sorted(views)
         return views
 
-    def hasView(self, view_name, schema=None):
+    def hasView(self, view_name, schema=None) -> bool:
         views = self.getViews(schema=schema)
         if view_name in views:
             return True
         return False
 
-    def hasTable(self, table_name, schema=None):
-        if self.supportsSchema:
-            return self.engine.has_table(table_name=table_name, schema=schema)
-        else:
-            return self.engine.has_table(table_name=table_name)
+    def hasTable(self, table_name, schema=None) -> bool:
+        inspector = inspect(self.engine)
+        return inspector.has_table(table_name, schema=schema)
 
-    def getTableColumns(self, table_name):
+    def getTableColumns(self, table_name) -> list[DbColumn]:
         """Get the table columns as list of DbColumn.
         
         :param table_name: the name of the table to get the columns from. 
@@ -142,7 +138,7 @@ class ADb(ABC):
         db_cols = [ DbColumn(**item) for item in columns ]
         return db_cols
     
-    def getGeometryColumn(self, table_name):
+    def getGeometryColumn(self, table_name) -> DbColumn:
         """Get the geometry columns of a table.
         
         :param table_name: the name of the table to get the geometry column from. 
@@ -214,7 +210,7 @@ class ADb(ABC):
                 
         # return dataList
     
-    def getRecordCount(self, table_name):
+    def getRecordCount(self, table_name) -> int:
         """Return the count of the records of a table.
 
         :param table_name: the table to list data from.
@@ -231,10 +227,10 @@ class ADb(ABC):
         """
         return self.engine.connect()
     
-    def createTable(self, table_object):
+    def createTable(self, table_object) -> None:
         table_object.create(self.engine)
     
-    def dropTable(self, table_object):
+    def dropTable(self, table_object) -> None:
         table_object.drop(self.engine)
     
     def dropTable(self, table_name, schema=None):
