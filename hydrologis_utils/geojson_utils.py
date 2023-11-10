@@ -55,6 +55,24 @@ class HyGeojsonUtils():
     @staticmethod
     def toFeatureCollection( features:list ) -> FeatureCollection:
         return FeatureCollection(features)
+
+    @staticmethod
+    def featureToString( feature:Feature ) -> str:
+        """
+        Create a geojson string from a geojson feature.
+        """
+        # encode the feature
+        jsonString = geojson.dumps(feature)
+        return jsonString
+    
+    @staticmethod
+    def featureCollectionToString( featureCollection:FeatureCollection ) -> str:
+        """
+        Create a geojson string from a geojson featurecollection.
+        """
+        # encode the feature
+        jsonString = geojson.dumps(featureCollection, sort_keys=True)
+        return jsonString
     
 
 
