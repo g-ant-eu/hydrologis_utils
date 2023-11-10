@@ -70,8 +70,16 @@ class HyGeojsonUtils():
         """
         Create a geojson string from a geojson featurecollection.
         """
-        # encode the feature
         jsonString = geojson.dumps(featureCollection, sort_keys=True)
+        return jsonString
+    
+    @staticmethod
+    def featuresListToString( features:list[Feature] ) -> str:
+        """
+        Create a geojson string from a geojson featurecollection.
+        """
+        fc = FeatureCollection(features)
+        jsonString = geojson.dumps(fc, sort_keys=True)
         return jsonString
     
 
