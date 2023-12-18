@@ -148,9 +148,20 @@ class HySTRTreeIndex():
     Wrapper for shapely STRtree index.
     """
     
-    def __init__(self, geomList:list[BaseGeometry]):
+    def __init__(self, geomList:list[BaseGeometry], referenceList:list = None):
+        """
+        Initialize the index.
+
+        :param geomList: the list of geometries to index.
+        :param referenceList: the list of reference objects to index. If this is set, then the
+                        various query methods will return the reference objects instead of the 
+                        geometries. Naturally it has to have the same dimension as the geomList.
+        """
         self.geomList = geomList
         self.index = shapely.STRtree(geomList)
+        self.referenceList = referenceList
+        if referenceList is not None and len(referenceList) != len(geomList):
+            raise Exception("The reference list must have the same dimension as the geometry list.")
 
     def query(self, geom:BaseGeometry) -> list[BaseGeometry]:
         """
@@ -161,7 +172,8 @@ class HySTRTreeIndex():
         :return: a list of intersecting geometries
         """
         indexes = self.index.query(geom)
-
+        if self.referenceList:
+            return [self.referenceList[i] for i in indexes]
         return [self.geomList[i] for i in indexes]
     
     def queryNearest(self, geom:BaseGeometry, maxDistance:float = None) -> BaseGeometry:
@@ -175,5 +187,7 @@ class HySTRTreeIndex():
         """
         nearestGeomIndex = self.index.query_nearest(geom, max_distance=maxDistance)
         if nearestGeomIndex:
+            if self.referenceList:
+                return self.referenceList[nearestGeomIndex[0]]
             return self.geomList[nearestGeomIndex[0]]
         return None

@@ -115,6 +115,12 @@ class TestGeomutils(unittest.TestCase):
         self.assertEqual(len(geoms), 1)
         self.assertEqual(geoms[0], p2)
 
+        # now with reference list
+        index = HySTRTreeIndex([p1, p2, p3], [1, 2, 3])
+        refList = index.query(line)
+        self.assertEqual(len(refList), 1)
+        self.assertEqual(refList[0], 2)
+
     def test_spatial_index_nearest(self):
         p1 = HyGeomUtils.fromWkt("POINT (100 100)")
         p2 = HyGeomUtils.fromWkt("POINT (200 150)")
@@ -132,6 +138,11 @@ class TestGeomutils(unittest.TestCase):
         
         geom = index.queryNearest(line)
         self.assertEqual(geom, p3)
+
+        # now with reference list
+        index = HySTRTreeIndex([p1, p2, p3], [1, 2, 3])
+        ref = index.queryNearest(line)
+        self.assertEqual(ref, 3)
 
 
 
