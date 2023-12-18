@@ -1,4 +1,4 @@
-from hydrologis_utils.geom_utils import HyGeomUtils
+from hydrologis_utils.geom_utils import HyGeomUtils, HySTRTreeIndex
 
 import unittest
 
@@ -100,6 +100,39 @@ class TestGeomutils(unittest.TestCase):
         geom2 = HyGeomUtils.fromGeoJson(geojson)
         
         self.assertEqual(geom, geom2)
+
+    def test_spatial_index_query(self):
+
+        p1 = HyGeomUtils.fromWkt("POINT (100 100)")
+        p2 = HyGeomUtils.fromWkt("POINT (200 150)")
+        p3 = HyGeomUtils.fromWkt("POINT (320 200)")
+
+        line = HyGeomUtils.fromWkt("LINESTRING (100 200, 300 200, 300 130)")
+
+        index = HySTRTreeIndex([p1, p2, p3])
+
+        geoms = index.query(line)
+        self.assertEqual(len(geoms), 1)
+        self.assertEqual(geoms[0], p2)
+
+    def test_spatial_index_nearest(self):
+        p1 = HyGeomUtils.fromWkt("POINT (100 100)")
+        p2 = HyGeomUtils.fromWkt("POINT (200 150)")
+        p3 = HyGeomUtils.fromWkt("POINT (320 200)")
+
+        line = HyGeomUtils.fromWkt("LINESTRING (100 200, 300 200, 300 130)")
+
+        index = HySTRTreeIndex([p1, p2, p3])
+
+        geom = index.queryNearest(line, maxDistance=1000)
+        self.assertEqual(geom, p3)
+        
+        geom = index.queryNearest(line, maxDistance=10)
+        self.assertIsNone(geom)
+        
+        geom = index.queryNearest(line)
+        self.assertEqual(geom, p3)
+
 
 
     

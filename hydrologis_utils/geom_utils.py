@@ -18,7 +18,7 @@ class HyGeomUtils():
     
 
     @staticmethod
-    def splitLineEquidistant(line:LineString, segmentLength:float = 3.0) -> list:
+    def splitLineEquidistant(line:LineString, segmentLength:float = 3.0) -> list[LineString]:
         if not isinstance(line, LineString):
             raise Exception("The input geometry must be a LineString.")
         lineCoords = list(line.coords)
@@ -61,7 +61,7 @@ class HyGeomUtils():
 
         
     @staticmethod
-    def splitLineEquidistantShply(line:LineString, distanceDelta:float = 3.0) -> list:
+    def splitLineEquidistantShply(line:LineString, distanceDelta:float = 3.0) -> list[LineString]:
         if not isinstance(line, LineString):
             raise Exception("The input geometry must be a LineString.")
         # generate the equidistant points
@@ -142,3 +142,38 @@ class HyGeomUtils():
             raise Exception("The input geometry must be a LineString/MultiLineString or Polygon/Multipolygon.")
         return geom
     
+
+class HySTRTreeIndex():
+    """
+    Wrapper for shapely STRtree index.
+    """
+    
+    def __init__(self, geomList:list[BaseGeometry]):
+        self.geomList = geomList
+        self.index = shapely.STRtree(geomList)
+
+    def query(self, geom:BaseGeometry) -> list[BaseGeometry]:
+        """
+        Query the spatial index for bounding box intersecting geometries.
+
+        :param geom: the geometry to query for.
+
+        :return: a list of intersecting geometries
+        """
+        indexes = self.index.query(geom)
+
+        return [self.geomList[i] for i in indexes]
+    
+    def queryNearest(self, geom:BaseGeometry, maxDistance:float = None) -> BaseGeometry:
+        """
+        Query the spatial index for the nearest geometry to a given geometry.
+
+        :param geom: the geometry to query for.
+        :param maxDistance: the maximum distance to search for.
+
+        :return: the nearest geometry or none.
+        """
+        nearestGeomIndex = self.index.query_nearest(geom, max_distance=maxDistance)
+        if nearestGeomIndex:
+            return self.geomList[nearestGeomIndex[0]]
+        return None
