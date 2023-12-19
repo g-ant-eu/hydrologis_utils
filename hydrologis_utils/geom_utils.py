@@ -186,8 +186,16 @@ class HySTRTreeIndex():
         :return: the nearest geometry or none.
         """
         nearestGeomIndex = self.index.query_nearest(geom, max_distance=maxDistance)
-        if nearestGeomIndex:
+        if nearestGeomIndex is not None:
+            index = None
+            if isinstance(nearestGeomIndex, np.ndarray ) or isinstance(nearestGeomIndex, list):
+                if len(nearestGeomIndex) == 0:
+                    return None
+                index = nearestGeomIndex[0]
+            else:
+                index = nearestGeomIndex
+        
             if self.referenceList:
-                return self.referenceList[nearestGeomIndex[0]]
-            return self.geomList[nearestGeomIndex[0]]
+                return self.referenceList[index]
+            return self.geomList[index]
         return None

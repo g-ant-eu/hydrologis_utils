@@ -2,11 +2,8 @@ from shapely.geometry.base import BaseGeometry
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry import LineString as ShapelyLineString
 from shapely.geometry import Polygon as ShapelyPolygon
-# from shapely.ops import transform
 from geojson import Feature, FeatureCollection, Point, LineString, Polygon
 import geojson
-#, Point, 
-#, loads, dumps
 
 class HyGeojsonUtils():
 
