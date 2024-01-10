@@ -160,12 +160,7 @@ class TestGeomutils(unittest.TestCase):
         transformedP = affine_transform(p, matrix)
         self.assertEqual(transformedP.x, 0)
         self.assertEqual(transformedP.y, 4000)
-        
-
-
     
-
-
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import numpy as np
 from shapely.geometry import GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon
 import shapely
 from shapely.geometry.base import BaseGeometry
+import numpy as np
 
 class ExtendedGeometry():
     """
@@ -165,15 +166,34 @@ class HyGeomUtils():
             [x']   / a  b xoff \ [x]
             [y'] = | d  e yoff | [y]
             [1 ]   \ 0  0   1  / [1]
+
+        :param world: the world coordinate system as a list of [xmin, ymin, xmax, ymax]
+        :param rect: the rectangle coordinate system as a list of [xmin, ymin, xmax, ymax]
         """
         rectWidth = (rect[2] - rect[0])
         rectHeight = (rect[3] - rect[1])
-        a = rectWidth / (world[2] - world[0])
-        b = 0
-        d = 0
-        e = -1 * rectHeight / (world[3] - world[1])
-        xoff = a * (-world[0])
-        yoff = rectHeight - (-world[1])
+        worldWidth = (world[2] - world[0])
+        worldHeight = (world[3] - world[1])
+
+        translateMatrix = np.array([[1.0, 0.0, -world[0]],
+              [0, 1, -world[1]],
+              [0,  0,  1]])
+        scaleMatrix = np.array([[rectWidth / worldWidth, 0, 0],
+                [0, rectHeight / worldHeight, 0],
+                [0,  0,  1]])
+        mirrorMatrix = np.array([[1, 0, 0],
+                [0, -1, rectHeight],
+                [0, 0, 1]])
+        translateScaleMatrix = np.dot(scaleMatrix, translateMatrix)
+        transformMatrix = np.dot(mirrorMatrix, translateScaleMatrix)
+
+
+        a = transformMatrix[0][0]
+        b = transformMatrix[0][1]
+        d = transformMatrix[1][0]
+        e = transformMatrix[1][1]
+        xoff = transformMatrix[0][2]
+        yoff = transformMatrix[1][2]
 
         return [a, b, d, e, xoff, yoff]
     
