@@ -142,6 +142,33 @@ class HyGeomUtils():
             raise Exception("The input geometry must be a LineString/MultiLineString or Polygon/Multipolygon.")
         return geom
     
+    @staticmethod
+    def worldToRectangleMatrix(world:[float], rect:[int]) -> list[float]:
+        """
+        Get the scaling transformation matrix to transform from a world coordinate system 
+        to a rectangle coordinate system, following shapely's affine_transform.
+
+        For 2D affine transformations, the 6 parameter matrix is::
+
+            [a, b, d, e, xoff, yoff]
+
+        which represents the augmented matrix::
+
+            [x']   / a  b xoff \ [x]
+            [y'] = | d  e yoff | [y]
+            [1 ]   \ 0  0   1  / [1]
+        """
+        rectWidth = (rect[2] - rect[0])
+        rectHeight = (rect[3] - rect[1])
+        a = rectWidth / (world[2] - world[0])
+        b = 0
+        d = 0
+        e = -1 * rectHeight / (world[3] - world[1])
+        xoff = a * (-world[0])
+        yoff = rectHeight - (-world[1])
+
+        return [a, b, d, e, xoff, yoff]
+    
 
 class HySTRTreeIndex():
     """
@@ -199,3 +226,4 @@ class HySTRTreeIndex():
                 return self.referenceList[index]
             return self.geomList[index]
         return None
+    

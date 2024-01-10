@@ -1,4 +1,6 @@
 from sqlalchemy import null
+import sys
+sys.path.append("./")
 from hydrologis_utils.color_utils import *
 
 import unittest
@@ -69,6 +71,16 @@ class TestColorUtils(unittest.TestCase):
             brightC = ColorUtilities.getBrighterColor(c, offset=i*0.2)
             self.assertEqual(results[i], brightC)
 
+    def test_colors(self):
+        c = "#FF0000"
+        hc = HyColor(hexColor=c)
+
+        self.assertEqual(hc.getHex(), "#FF0000FF")
+        self.assertEqual(hc.getRgba(), (255, 0, 0, 255))
+
+        hc = HyColor(rgbaColor=(255, 0, 0, 0))
+        self.assertEqual(hc.getHex(), "#FF000000")
+        self.assertEqual(hc.getRgba(), (255, 0, 0, 0))
 
 
 

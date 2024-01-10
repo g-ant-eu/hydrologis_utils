@@ -1,5 +1,6 @@
 from hydrologis_utils.geom_utils import HyGeomUtils, HySTRTreeIndex
-
+from shapely.affinity import affine_transform
+from shapely.geometry import GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon
 import unittest
 
 # run with python3 -m unittest discover tests/
@@ -144,6 +145,22 @@ class TestGeomutils(unittest.TestCase):
         ref = index.queryNearest(line)
         self.assertEqual(ref, 3)
 
+    def test_transform_world_to_rectangle(self):
+        world = (100, 1000, 200, 5000)
+        rect = (0, 0, 100, 4000)
+
+        matrix = HyGeomUtils.worldToRectangleMatrix(world, rect)
+        
+        p = Point(150.0, 3000.0)
+        transformedP = affine_transform(p, matrix)
+        self.assertEqual(transformedP.x, 50)
+        self.assertEqual(transformedP.y, 2000)
+        
+        p = Point(100.0, 1000.0)
+        transformedP = affine_transform(p, matrix)
+        self.assertEqual(transformedP.x, 0)
+        self.assertEqual(transformedP.y, 4000)
+        
 
 
     

@@ -1,5 +1,38 @@
 import enum
 
+class HyColor():
+
+    # init method using hex or rgba
+    def __init__(self, hexColor:str=None, rgbaColor:tuple=None):
+        if hexColor:
+            # convert hex to rgba
+            self.rgbaColor = self._hexToRgb(hexColor)
+        elif rgbaColor:
+            self.rgbaColor = rgbaColor
+        else:
+            raise Exception("You need to pass either a hex or an rgba color.")
+
+    # convert hex to rgba
+    def _hexToRgb(self, hexColor:str) -> tuple:
+        hexColor = hexColor.lstrip('#')
+        # if hexcolor has no alpha, add it
+        if len(hexColor) == 6:
+            hexColor += "FF"
+        hlen = len(hexColor)
+        return tuple(int(hexColor[i:i+hlen//3], 16) for i in range(0, hlen, hlen//3))
+
+    # convert rgba to uppercase hex
+    def _rgbToHex(self, rgbaColor:tuple) -> str:
+        return '#%02X%02X%02X%02X' % rgbaColor
+        
+
+    def getHex(self) -> str:
+        return self._rgbToHex(self.rgbaColor)
+
+    def getRgba(self) -> tuple:
+        return self.rgbaColor
+    
+
 class ColorUtilities():
     """
     Utilities methods for color management.
@@ -89,7 +122,7 @@ class ColorProvider():
         self.index = 0
         self.max = len(self.colorTable)
 
-    def getNextHexColor(self):
+    def getNextHexColor(self) -> str:
         """
         Get a color from a table. Starts from begin when reaching the end.
         
@@ -104,7 +137,7 @@ class ColorProvider():
         self.index += 1
         return color
     
-    def getHexColorList(self, size):
+    def getHexColorList(self, size) -> [str]:
         """
         Get a list of hex colors.
         
