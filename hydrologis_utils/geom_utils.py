@@ -7,6 +7,14 @@ from shapely.geometry import GeometryCollection, LineString, MultiLineString, Mu
 import shapely
 from shapely.geometry.base import BaseGeometry
 
+class ExtendedGeometry():
+    """
+    A class that extends the shapely BaseGeometry class.
+    """
+    def __init__(self, geom:BaseGeometry, attribute:any=None):
+        self.geom = geom
+        self.attribute = attribute
+    
 class HyGeomUtils():
 
     # static method to convert geometry to 2D
