@@ -4,6 +4,7 @@ from shapely.geometry.base import BaseGeometry
 from shapely.affinity import affine_transform
 from hydrologis_utils.geom_utils import HyGeomUtils, ExtendedGeometry
 from hydrologis_utils.color_utils import HyColor
+import math
 
 class HyStyle():
     def __init__(self, fillColor:HyColor = None, strokeColor:HyColor = None, strokeWidth:int = 2, size:int = 15):
@@ -24,9 +25,23 @@ class HyStyle():
     def defaultPointStyle():
         return HyStyle(fillColor=HyColor(rgbaColor=(255,0,0,100)),strokeColor=HyColor(rgbaColor=(255,0,0,255)), strokeWidth=1, size=15)
 
+class HySlippyTiles():
+    @staticmethod
+    def tile2lon( x:int, zoom:int ):
+        return x / pow(2.0, zoom) * 360.0 - 180.0
+    
+    @staticmethod
+    def tile2lat( y:int, zoom:int ):
+        n = math.pi - (2.0 * math.pi * y) / pow(2.0, zoom)
+        return math.degrees(math.atan(math.sinh(n)))
+    
+    
+
 class HyGeomRenderer():
     """
-    Small utility to draw geometries on images.
+    Small utility to draw lat long geometries on an image.
+
+    Usefull to create simple tiles.
     """
     def __init__(self, imageSize:(int, int)):
         self.imageSize = imageSize
@@ -43,9 +58,9 @@ class HyGeomRenderer():
     def setPointStyle(self, style:HyStyle):
         self.pointStyle = style
 
-    def renderTile(self, tileBoundsLongLat:[float], geometries:[], colorTable:dict=None , antialias:bool=False) -> Image:
+    def renderImage(self, imagesBoundsLongLat:[float], geometriesLongLat:[], colorTable:dict=None , antialias:bool=False) -> Image:
         # Create a bounding box geometry for the tile
-        tile_box = box(tileBoundsLongLat[0], tileBoundsLongLat[1], tileBoundsLongLat[2], tileBoundsLongLat[3])
+        tile_box = box(imagesBoundsLongLat[0], imagesBoundsLongLat[1], imagesBoundsLongLat[2], imagesBoundsLongLat[3])
 
         factor = 1
         if antialias:
@@ -58,12 +73,12 @@ class HyGeomRenderer():
         # Create a drawing object
         draw = ImageDraw.Draw(image)
 
-        for geom in geometries:
+        for geom in geometriesLongLat:
             if isinstance(geom, ExtendedGeometry):
                 attribute = geom.attribute
                 geom = geom.geom
             if geom.intersects(tile_box):
-                matrix = HyGeomUtils.worldToRectangleMatrix([tileBoundsLongLat[0], tileBoundsLongLat[1], tileBoundsLongLat[2], tileBoundsLongLat[3]], [0, 0, w, h])
+                matrix = HyGeomUtils.worldToRectangleMatrix([imagesBoundsLongLat[0], imagesBoundsLongLat[1], imagesBoundsLongLat[2], imagesBoundsLongLat[3]], [0, 0, w, h])
                 scaledGeom = affine_transform(geom, matrix)
 
                 style = self.polygonStyle

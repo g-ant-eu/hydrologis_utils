@@ -32,14 +32,14 @@ class TestRenderUtils(unittest.TestCase):
 
         renderer = HyGeomRenderer(imageSize=(512, 512))
         renderer.setPolygonStyle(HyStyle(fillColor=HyColor(rgbaColor=(0,0,255,128)),strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=5))
-        tileImage = renderer.renderTile( tile_bounds, [geom1, geom2])
+        tileImage = renderer.renderImage( tile_bounds, [geom1, geom2])
 
         # compare the image with this
         compareImage = "./tests/samples/test_tile_polygon.png"
         diff = ImageChops.difference(tileImage, Image.open(compareImage))
         self.assertIsNone(diff.getbbox())
 
-        tileImage = renderer.renderTile( tile_bounds, [geom1, geom2], antialias=True)
+        tileImage = renderer.renderImage( tile_bounds, [geom1, geom2], antialias=True)
         compareImage = "./tests/samples/test_tile_polygon_antialias.png"
         diff = ImageChops.difference(tileImage, Image.open(compareImage))
         self.assertIsNone(diff.getbbox())
@@ -49,7 +49,7 @@ class TestRenderUtils(unittest.TestCase):
             1:HyStyle(fillColor=HyColor(rgbaColor=(255,0,0,128)),strokeColor=HyColor(rgbaColor=(255,0,0,255)), strokeWidth=3), 
             2:HyStyle(fillColor=HyColor(rgbaColor=(0,255,0,128)),strokeColor=HyColor(rgbaColor=(0,255,0,255)), strokeWidth=3)
         }
-        tileImage = renderer.renderTile( tile_bounds, [ExtendedGeometry(geom1, 1), ExtendedGeometry(geom2, 2)], colorTable=colorTable)
+        tileImage = renderer.renderImage( tile_bounds, [ExtendedGeometry(geom1, 1), ExtendedGeometry(geom2, 2)], colorTable=colorTable)
         compareImage = "./tests/samples/test_tile_polygon_styled.png"
         diff = ImageChops.difference(tileImage, Image.open(compareImage))
         self.assertIsNone(diff.getbbox())
@@ -65,7 +65,7 @@ class TestRenderUtils(unittest.TestCase):
 
         renderer = HyGeomRenderer(imageSize=(512, 512))
         renderer.setLineStyle(HyStyle(strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=5))
-        tileImage = renderer.renderTile( tile_bounds, [geom1, geom2])
+        tileImage = renderer.renderImage( tile_bounds, [geom1, geom2])
 
         compareImage = "./tests/samples/test_tile_line.png"
         # compare the image with this
@@ -86,7 +86,7 @@ class TestRenderUtils(unittest.TestCase):
             1:HyStyle(fillColor=HyColor(rgbaColor=(255,0,0,128)),strokeColor=HyColor(rgbaColor=(255,0,0,255)), strokeWidth=1, size=30), 
             2:HyStyle(fillColor=HyColor(rgbaColor=(0,255,0,128)),strokeColor=HyColor(rgbaColor=(0,255,0,255)), strokeWidth=1, size=30)
         }
-        tileImage = renderer.renderTile( tile_bounds, [ExtendedGeometry(geom1, 1), ExtendedGeometry(geom2, 2)], colorTable=colorTable)
+        tileImage = renderer.renderImage( tile_bounds, [ExtendedGeometry(geom1, 1), ExtendedGeometry(geom2, 2)], colorTable=colorTable)
 
         compareImage = "./tests/samples/test_tile_point.png"
         # compare the image with this
@@ -112,7 +112,7 @@ class TestRenderUtils(unittest.TestCase):
             "lines":HyStyle(strokeColor=HyColor(rgbaColor=(0,255,0,255)), strokeWidth=3),
             "polygons":HyStyle(fillColor=HyColor(rgbaColor=(0,0,255,180)),strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=2), 
         }
-        tileImage = renderer.renderTile( tile_bounds, [
+        tileImage = renderer.renderImage( tile_bounds, [
             ExtendedGeometry(geom1, "polygons"), 
             ExtendedGeometry(geom2, "polygons"),
             ExtendedGeometry(geom3, "lines"), 
