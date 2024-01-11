@@ -81,6 +81,7 @@ class HyGeomRenderer():
                 matrix = HyGeomUtils.worldToRectangleMatrix([imagesBoundsLongLat[0], imagesBoundsLongLat[1], imagesBoundsLongLat[2], imagesBoundsLongLat[3]], [0, 0, w, h])
                 scaledGeom = affine_transform(geom, matrix)
 
+                style = None
                 # check if the geometry has an attribute to use with the colortable
                 if colorTable and attribute and attribute in colorTable:
                     style = colorTable[attribute]
