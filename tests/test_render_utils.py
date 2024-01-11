@@ -19,7 +19,7 @@ class TestRenderUtils(unittest.TestCase):
     line1Wkt = """MULTILINESTRING ((160 -30, 460 360, 110 450, 360 750, 570 530, 860 740, 1090 440, 630 360), 
                         (460 70, 510 340, 735 116, 770 490))"""
     line2Wkt = """LINESTRING (312 205, 490 520, 570 80, 790 600)"""
-    point1Wkt = """MULTIPOINT ((290 160), (460 410), (555.5555555555555 244.44444444444443), (925.5555555555555 436.66666666666663))"""
+    point1Wkt = """MULTIPOINT ((210 50), (190 100))"""
     point2Wkt = """POINT (760 40)"""
     
     def test_polygon_tile(self):
@@ -108,7 +108,7 @@ class TestRenderUtils(unittest.TestCase):
         
         # style by attribute
         colorTable = {
-            "points":HyStyle(fillColor=HyColor(rgbaColor=(255,0,0,180)),strokeColor=HyColor(rgbaColor=(255,0,0,255)), strokeWidth=1, size=30), 
+            "points":HyStyle(fillColor=HyColor(rgbaColor=(255,0,0,180)),strokeColor=HyColor(rgbaColor=(255,0,0,255)), strokeWidth=1, size=50), 
             "lines":HyStyle(strokeColor=HyColor(rgbaColor=(0,255,0,255)), strokeWidth=3),
             "polygons":HyStyle(fillColor=HyColor(rgbaColor=(0,0,255,180)),strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=2), 
         }
