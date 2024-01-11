@@ -65,7 +65,7 @@ class TestRenderUtils(unittest.TestCase):
         tile_bounds = boundsGeom.bounds
 
         renderer = HyGeomRenderer(imageSize=(512, 512))
-        renderer.setLineStyle(HyStyle(strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=5))
+        renderer.setLineStyle(HyStyle(strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=15))
         tileImage = renderer.renderImage( tile_bounds, [geom1, geom2])
 
         compareImage = "./tests/samples/test_tile_line.png"

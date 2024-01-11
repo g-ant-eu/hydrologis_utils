@@ -112,12 +112,12 @@ class HyGeomRenderer():
                 elif scaledGeom.geom_type == "LineString":
                     if not style:
                         style = self.lineStyle
-                    draw.line(scaledGeom.coords, fill=style.strokeColor.getRgba(), width=style.strokeWidth*factor)
+                    draw.line(scaledGeom.coords, fill=style.strokeColor.getRgba(), width=style.strokeWidth*factor, joint="curve")
                 elif scaledGeom.geom_type == "MultiLineString":
                     if not style:
                         style = self.lineStyle
                     for line in scaledGeom.geoms:
-                        draw.line(line.coords, fill=style.strokeColor.getRgba(), width=style.strokeWidth*factor)
+                        draw.line(line.coords, fill=style.strokeColor.getRgba(), width=style.strokeWidth*factor, joint="curve")
                 elif scaledGeom.geom_type == "Point":
                     if not style:
                         style = self.pointStyle
