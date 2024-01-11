@@ -113,3 +113,6 @@ class HyGeomRenderer():
             image = image.resize(self.imageSize, Image.Resampling.LANCZOS)
 
         return image
+    
+    def transparentImage(self) -> Image:
+        return Image.new("RGBA", self.imageSize, (0, 0, 0, 0))
