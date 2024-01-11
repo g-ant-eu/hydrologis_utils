@@ -81,29 +81,40 @@ class HyGeomRenderer():
                 matrix = HyGeomUtils.worldToRectangleMatrix([imagesBoundsLongLat[0], imagesBoundsLongLat[1], imagesBoundsLongLat[2], imagesBoundsLongLat[3]], [0, 0, w, h])
                 scaledGeom = affine_transform(geom, matrix)
 
-                style = self.polygonStyle
                 # check if the geometry has an attribute to use with the colortable
                 if colorTable and attribute and attribute in colorTable:
                     style = colorTable[attribute]
 
                 if scaledGeom.geom_type == "Polygon":
+                    if not style:
+                        style = self.polygonStyle
                     draw.polygon(scaledGeom.exterior.coords, outline=style.strokeColor.getRgba(), fill=style.fillColor.getRgba(), width=style.strokeWidth*factor)
                     for hole in scaledGeom.interiors:
                         draw.polygon(hole.coords, outline=style.strokeColor.getRgba(), fill=(0, 0, 0, 0), width=style.strokeWidth*factor)
                 elif scaledGeom.geom_type == "MultiPolygon":
+                    if not style:
+                        style = self.polygonStyle
                     for poly in scaledGeom.geoms:
                         draw.polygon(poly.exterior.coords, outline=style.strokeColor.getRgba(), fill=style.fillColor.getRgba(), width=style.strokeWidth*factor)
                         for hole in poly.interiors:
                             draw.polygon(hole.coords, outline=style.strokeColor.getRgba(), fill=(0, 0, 0, 0), width=style.strokeWidth*factor)
                 elif scaledGeom.geom_type == "LineString":
+                    if not style:
+                        style = self.lineStyle
                     draw.line(scaledGeom.coords, fill=style.strokeColor.getRgba(), width=style.strokeWidth*factor)
                 elif scaledGeom.geom_type == "MultiLineString":
+                    if not style:
+                        style = self.lineStyle
                     for line in scaledGeom.geoms:
                         draw.line(line.coords, fill=style.strokeColor.getRgba(), width=style.strokeWidth*factor)
                 elif scaledGeom.geom_type == "Point":
+                    if not style:
+                        style = self.pointStyle
                     halfSize = style.size/2
                     draw.ellipse([scaledGeom.x-halfSize, scaledGeom.y-halfSize, scaledGeom.x+halfSize, scaledGeom.y+halfSize], fill=style.fillColor.getRgba(), outline=style.strokeColor.getRgba(), width=style.strokeWidth*factor)
                 elif scaledGeom.geom_type == "MultiPoint":
+                    if not style:
+                        style = self.pointStyle
                     halfSize = style.size/2
                     for point in scaledGeom.geoms:
                         draw.ellipse([point.x-halfSize, point.y-halfSize, point.x+halfSize, point.y+halfSize], fill=style.fillColor.getRgba(), outline=style.strokeColor.getRgba(), width=style.strokeWidth*factor)
