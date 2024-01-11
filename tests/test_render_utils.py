@@ -19,8 +19,9 @@ class TestRenderUtils(unittest.TestCase):
     line1Wkt = """MULTILINESTRING ((160 -30, 460 360, 110 450, 360 750, 570 530, 860 740, 1090 440, 630 360), 
                         (460 70, 510 340, 735 116, 770 490))"""
     line2Wkt = """LINESTRING (312 205, 490 520, 570 80, 790 600)"""
-    point1Wkt = """MULTIPOINT ((210 50), (190 100))"""
-    point2Wkt = """POINT (760 40)"""
+    point1Wkt = """MULTIPOINT ((440 190), (360 390), (660 510), (737 355))"""
+    point2Wkt = """POINT (210 50)"""
+    point3Wkt = """POINT (187 105)"""
     
     def test_polygon_tile(self):
         
@@ -75,6 +76,7 @@ class TestRenderUtils(unittest.TestCase):
     def test_point_tile(self):     
         geom1 = HyGeomUtils.fromWkt(self.point1Wkt)
         geom2 = HyGeomUtils.fromWkt(self.point2Wkt)
+        geom3 = HyGeomUtils.fromWkt(self.point3Wkt)
                 
         boundsGeom = HyGeomUtils.fromWkt("POLYGON ((200 700, 900 700, 900 0, 200 0, 200 700))")
         tile_bounds = boundsGeom.bounds
@@ -84,9 +86,11 @@ class TestRenderUtils(unittest.TestCase):
         # style by attribute
         colorTable = {
             1:HyStyle(fillColor=HyColor(rgbaColor=(255,0,0,128)),strokeColor=HyColor(rgbaColor=(255,0,0,255)), strokeWidth=1, size=30), 
-            2:HyStyle(fillColor=HyColor(rgbaColor=(0,255,0,128)),strokeColor=HyColor(rgbaColor=(0,255,0,255)), strokeWidth=1, size=30)
+            2:HyStyle(fillColor=HyColor(rgbaColor=(0,255,0,128)),strokeColor=HyColor(rgbaColor=(0,255,0,255)), strokeWidth=1, size=30),
+            3:HyStyle(fillColor=HyColor(rgbaColor=(0,0,255,128)),strokeColor=HyColor(rgbaColor=(0,0,255,255)), strokeWidth=1, size=50)
         }
-        tileImage = renderer.renderImage( tile_bounds, [ExtendedGeometry(geom1, 1), ExtendedGeometry(geom2, 2)], colorTable=colorTable)
+        tileImage = renderer.renderImage( tile_bounds, [ExtendedGeometry(geom1, 1), ExtendedGeometry(geom2, 2), ExtendedGeometry(geom3, 3)], colorTable=colorTable, \
+                                         intersectionBufferX=20)
 
         compareImage = "./tests/samples/test_tile_point.png"
         # compare the image with this
@@ -100,6 +104,7 @@ class TestRenderUtils(unittest.TestCase):
         geom4 = HyGeomUtils.fromWkt(self.line2Wkt)
         geom5 = HyGeomUtils.fromWkt(self.point1Wkt)
         geom6 = HyGeomUtils.fromWkt(self.point2Wkt)
+        geom7 = HyGeomUtils.fromWkt(self.point3Wkt)
                 
         boundsGeom = HyGeomUtils.fromWkt("POLYGON ((200 700, 900 700, 900 0, 200 0, 200 700))")
         tile_bounds = boundsGeom.bounds
@@ -119,7 +124,8 @@ class TestRenderUtils(unittest.TestCase):
             ExtendedGeometry(geom4, "lines"),
             ExtendedGeometry(geom5, "points"), 
             ExtendedGeometry(geom6, "points"),
-            ], colorTable=colorTable, antialias=True)
+            ExtendedGeometry(geom7, "points"),
+            ], colorTable=colorTable, antialias=True, intersectionBufferX=20)
 
         compareImage = "./tests/samples/test_tile_misch.png"
         # compare the image with this

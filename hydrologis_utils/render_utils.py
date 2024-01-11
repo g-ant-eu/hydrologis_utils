@@ -58,9 +58,19 @@ class HyGeomRenderer():
     def setPointStyle(self, style:HyStyle):
         self.pointStyle = style
 
-    def renderImage(self, imagesBoundsLongLat:[float], geometriesLongLat:[], colorTable:dict=None , antialias:bool=False) -> Image:
-        # Create a bounding box geometry for the tile
-        tile_box = box(imagesBoundsLongLat[0], imagesBoundsLongLat[1], imagesBoundsLongLat[2], imagesBoundsLongLat[3])
+    def renderImage(self, imagesBoundsLongLat:[float], geometriesLongLat:[], colorTable:dict=None , antialias:bool=False, intersectionBufferX:float=0, intersectionBufferY:float=0 ) -> Image:
+        """
+        Render the geometries on an image.
+
+        :param imagesBoundsLongLat: the bounds of the image in long lat as a list of [xmin, ymin, xmax, ymax]
+        :param geometriesLongLat: the geometries to render in long lat (this can be an ExtendedGeometry, in case theming with colorTable is used)
+        :param colorTable: a dictionary of attribute values and styles to use for theming (the attribute comes from the ExtendedGeometry)
+        :param antialias: if True, the image will be rendered with antialiasing (this is a workaround at the moment, rendering is made at double size and then resized)
+        :param intersectionBufferX: a buffer to use to enlarge the tile bounds in x direction (useful when rendering points, that need to have partials included from the side tile)
+        :param intersectionBufferY: a buffer to use to enlarge the tile bounds in y direction (useful when rendering points, that need to have partials included from the side tile)
+        """
+        # Create a bounding box geometry to check which geoms to include in the image rendering
+        tile_box = box(imagesBoundsLongLat[0] - intersectionBufferX, imagesBoundsLongLat[1] - intersectionBufferY, imagesBoundsLongLat[2] + intersectionBufferX, imagesBoundsLongLat[3] + intersectionBufferY)
 
         factor = 1
         if antialias:
