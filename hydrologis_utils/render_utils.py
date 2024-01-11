@@ -114,6 +114,5 @@ class HyGeomRenderer():
 
         return image
     
-    @staticmethod
     def transparentImage(self) -> Image:
         return Image.new("RGBA", self.imageSize, (0, 0, 0, 0))
