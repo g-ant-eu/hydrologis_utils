@@ -5,6 +5,7 @@ from shapely.affinity import affine_transform
 from hydrologis_utils.geom_utils import HyGeomUtils, ExtendedGeometry
 from hydrologis_utils.color_utils import HyColor
 import math
+from typing import List, Tuple
 
 class HyStyle():
     def __init__(self, fillColor:HyColor = None, strokeColor:HyColor = None, strokeWidth:int = 2, size:int = 15):
@@ -43,7 +44,7 @@ class HyGeomRenderer():
 
     Usefull to create simple tiles.
     """
-    def __init__(self, imageSize:(int, int)):
+    def __init__(self, imageSize:Tuple[int, int]):
         self.imageSize = imageSize
         self.polygonStyle = HyStyle.defaultPolygonStyle()
         self.lineStyle = HyStyle.defaultLineStyle()
@@ -58,7 +59,7 @@ class HyGeomRenderer():
     def setPointStyle(self, style:HyStyle):
         self.pointStyle = style
 
-    def renderImage(self, imagesBoundsLongLat:[float], geometriesLongLat:[], colorTable:dict=None , antialias:bool=False, intersectionBufferX:float=0, intersectionBufferY:float=0 ) -> Image:
+    def renderImage(self, imagesBoundsLongLat:List[float], geometriesLongLat:List, colorTable:dict=None , antialias:bool=False, intersectionBufferX:float=0, intersectionBufferY:float=0 ) -> Image:
         """
         Render the geometries on an image.
 
