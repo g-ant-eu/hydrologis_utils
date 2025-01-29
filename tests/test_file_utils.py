@@ -19,12 +19,12 @@ class TestFileUtils(unittest.TestCase):
         self.assertTrue(exists(path))
 
         new_text = readTextFromFile(path)
-        self.assertEquals(text, new_text)
+        self.assertEqual(text, new_text)
 
         lines = ["line1","line2","line3"]
         writeListToFile(path, lines)
         newLines = readTextLinesFromFile(path)
-        self.assertEquals(lines, newLines)
+        self.assertEqual(lines, newLines)
 
         data = [
             ["1", "2"],
@@ -32,8 +32,8 @@ class TestFileUtils(unittest.TestCase):
         ]
         writeListToCsv(path, data)
         csv_lines = readTextLinesFromFile(path)
-        self.assertEquals(csv_lines[0], "1;2")
-        self.assertEquals(csv_lines[1], "3;4")
+        self.assertEqual(csv_lines[0], "1;2")
+        self.assertEqual(csv_lines[1], "3;4")
 
         data = [
             {
@@ -53,29 +53,29 @@ class TestFileUtils(unittest.TestCase):
         ]
         writeDictToCsv(path, data, header=["id", "name", "cat"])
         csv_lines = readTextLinesFromFile(path)
-        self.assertEquals(csv_lines[0], "id;name;cat")
-        self.assertEquals(csv_lines[1], "1;test1;cat1")
-        self.assertEquals(csv_lines[2], "2;test2;cat2")
-        self.assertEquals(csv_lines[3], "3;;cat3")
+        self.assertEqual(csv_lines[0], "id;name;cat")
+        self.assertEqual(csv_lines[1], "1;test1;cat1")
+        self.assertEqual(csv_lines[2], "2;test2;cat2")
+        self.assertEqual(csv_lines[3], "3;;cat3")
 
         writeDictToCsv(path, data)
         csv_lines = readTextLinesFromFile(path)
-        self.assertEquals(csv_lines[0], "id;name;cat")
-        self.assertEquals(csv_lines[1], "1;test1;cat1")
-        self.assertEquals(csv_lines[2], "2;test2;cat2")
-        self.assertEquals(csv_lines[3], "3;;cat3")
+        self.assertEqual(csv_lines[0], "id;name;cat")
+        self.assertEqual(csv_lines[1], "1;test1;cat1")
+        self.assertEqual(csv_lines[2], "2;test2;cat2")
+        self.assertEqual(csv_lines[3], "3;;cat3")
 
     def test_file_utils(self):
         path = "/home/hydrologis/tmp/file.txt"
-        self.assertEquals(getFileName(path), "file.txt")
-        self.assertEquals(getFileName(path, remove_ext=True), "file")
+        self.assertEqual(getFileName(path), "file.txt")
+        self.assertEqual(getFileName(path, remove_ext=True), "file")
 
 
         path1 = "/home/hydrologis"
         path2 = "tmp/"
         path3 = "file.txt"
         joined = joinPaths(joinPaths(path1, path2), path3)
-        self.assertEquals(joined, "/home/hydrologis/tmp/file.txt")
+        self.assertEqual(joined, "/home/hydrologis/tmp/file.txt")
 
     def test_zip_utils(self):
         tmp_folder = createTmpFolder()
@@ -91,7 +91,7 @@ class TestFileUtils(unittest.TestCase):
         self.assertTrue(os.path.exists(outZip))
 
         names = getZipFileNames(outZip)
-        self.assertEquals(len(names), 2)
+        self.assertEqual(len(names), 2)
         self.assertTrue("file1.txt" in names)
         self.assertTrue("file2.txt" in names)
 
@@ -103,9 +103,9 @@ class TestFileUtils(unittest.TestCase):
         writeTextToFile(f2, "blah2")
 
         list = listFiles(tmp_folder)
-        self.assertEquals(len(list), 2)
+        self.assertEqual(len(list), 2)
         list = listFiles(tmp_folder, extension="csv")
-        self.assertEquals(len(list), 1)
+        self.assertEqual(len(list), 1)
 
 
     # def test_folder_removal(self):

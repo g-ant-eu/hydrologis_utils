@@ -68,26 +68,26 @@ class TestDbUtils(unittest.TestCase):
         result = self.db.execute("select id, name from test order by name")
         
         for row in result:
-            self.assertEquals(row[1], 'Garde')
+            self.assertEqual(row[1], 'Garde')
             break
 
         result = self.db.getTableData(test_table)
         count  = 0
         for row in result:
             count += 1
-        self.assertEquals(count, 3)
+        self.assertEqual(count, 3)
 
         result = self.db.getTableData(test_table, limit=2)
         count  = 0
         for row in result:
             count += 1
-        self.assertEquals(count, 2)
+        self.assertEqual(count, 2)
         
         result = self.db.getTableData(table_name, where="name='Orta'")
         count  = 0
         for row in result:
             count += 1
-        self.assertEquals(count, 1)
+        self.assertEqual(count, 1)
 
         # test views
         sql = f"create view {view_name} as select name from {table_name}"
@@ -99,7 +99,7 @@ class TestDbUtils(unittest.TestCase):
         count  = 0
         for row in result:
             count += 1
-        self.assertEquals(count, 1)
+        self.assertEqual(count, 1)
 
         self.db.dropTable(view_name)
         self.assertFalse(self.db.hasView(view_name))
