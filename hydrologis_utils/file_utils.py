@@ -107,6 +107,10 @@ def deleteFileOrFolder(path):
 
     :param path: the path to the file/folder to remove.
     """
+    if os.path.isfile(file_path) or os.path.islink(file_path):
+        os.unlink(file_path)
+        return
+
     for filename in os.listdir(path):
         file_path = os.path.join(path, filename)
         try:
