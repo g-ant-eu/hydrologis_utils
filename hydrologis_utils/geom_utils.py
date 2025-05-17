@@ -87,7 +87,7 @@ class HyGeomUtils():
 
     
     @staticmethod
-    def fromWkt(wkt:str) -> BaseGeometry:
+    def fromWkt(wkt:str, srid:int=None) -> BaseGeometry:
         if wkt[:4].upper().startswith("SRID"):
             # split to get srid and geom
             srid, geom = wkt.split(";")
@@ -95,13 +95,17 @@ class HyGeomUtils():
             srid = int(srid.split("=")[1])
             geom = shapely.set_srid(geom, srid)
             return geom
+        elif srid:
+            geom = loads(wkt)
+            geom = shapely.set_srid(geom, srid)
+            return geom
         else:
             return loads(wkt)
     
     @staticmethod
     def toWkt(geom:BaseGeometry) -> str:
-        geom = dumps(geom)
         srid = shapely.get_srid(geom)
+        geom = dumps(geom)
         if srid is not None:
             geom = "SRID={};{}".format(srid, geom)
         return geom

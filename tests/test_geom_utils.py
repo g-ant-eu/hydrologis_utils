@@ -11,12 +11,15 @@ class TestGeomutils(unittest.TestCase):
     def test_wkt_conv(self):
         # create a wkt of a Linstring
         wkt = "LINESTRING (30 10, 10 30, 40 40)"
+        wktWithEpsg = "SRID=4326;LINESTRING (30 10, 10 30, 40 40)"
         # convert to shapely geometry
-        geom = HyGeomUtils.fromWkt(wkt)
+        geom = HyGeomUtils.fromWkt(wkt, srid=4326)
+        # convert back to wkt
+        wkt2 = HyGeomUtils.toWkt(geom)
+        self.assertEqual(HyGeomUtils.fromWkt(wktWithEpsg), HyGeomUtils.fromWkt(wkt2))
 
-        wkt = "SRID=4326;LINESTRING (30 10, 10 30, 40 40)"
-        geom1 = HyGeomUtils.fromWkt(wkt)
 
+        geom1 = HyGeomUtils.fromWkt(wktWithEpsg)
         wkb = HyGeomUtils.toWkb(geom)
         # convert back to geom
         geom2 = HyGeomUtils.fromWkb(wkb)
