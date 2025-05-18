@@ -22,7 +22,7 @@ class HyProjManager():
     def transformExtended(self, extGeom:ExtendedGeometry):
         geom = extGeom.get_basegeometry()
         transformedGeom = self.transform(geom)
-        extGeom.set_basegeometry(transformedGeom)
-        extGeom.set_srid(self.destinationEpsg)
-        return extGeom
+        transformedGeom = ExtendedGeometry(transformedGeom)
+        transformedGeom.set_srid(self.destinationEpsg)
+        return transformedGeom
         
