@@ -15,8 +15,139 @@ class ExtendedGeometry():
     def __init__(self, geom:BaseGeometry, attribute:any=None):
         self.geom = geom
         self.attribute = attribute
+
+    def get_basegeometry(self) -> BaseGeometry:
+        """
+        Get the base geometry of the object.
+        """
+        return self.geom
+    
+    def get_srid(self) -> int:
+        """
+        Get the SRID of the geometry.
+        """
+        return shapely.get_srid(self.geom)
+    
+    def set_srid(self, srid:int) -> None:
+        """
+        Set the SRID of the geometry.
+        """
+        self.geom = shapely.set_srid(self.geom, srid)
+
+    def rotate(self, angle:float, origin:Point) -> BaseGeometry:
+        """
+        Rotate the geometry by a given angle around a given origin.
+        """
+        geom = shapely.affinity.rotate(self.geom, angle, origin)
+        return ExtendedGeometry(geom)
+
+    def buffer(self, distance:float) -> BaseGeometry:
+        """
+        Buffer the geometry by a given distance.
+        """
+        return self.geom.buffer(distance)
+    
+    def get_coordinates(self) -> list:
+        """
+        Get the coordinates of the geometry.
+        """
+        return list(self.geom.coords)
+    
+    def get_area(self) -> float:
+        """
+        Get the area of the geometry.
+        """
+        return self.geom.area
+    
+    def get_length(self) -> float:
+        """
+        Get the length of the geometry.
+        """
+        return self.geom.length
+    
+    def get_bounds(self) -> tuple:
+        """
+        Get the bounds of the geometry.
+        """
+        return self.geom.bounds
+    
+    def get_centroid(self) -> Point:
+        """
+        Get the centroid of the geometry.
+        """
+        return self.geom.centroid
+    
+    def get_envelope(self) -> Polygon:
+        """
+        Get the envelope of the geometry.
+        """
+        return self.geom.envelope
+    
+    def get_intersection(self, other:BaseGeometry) -> BaseGeometry:
+        """
+        Get the intersection of the geometry with another geometry.
+        """
+        return self.geom.intersection(other)
+    
+    def wkt(self) -> str:
+        """
+        Get the WKT representation of the geometry.
+        """
+        return self.geom.wkt
+    
     
 class HyGeomUtils():
+
+    @staticmethod
+    def makeLineString(coordinates, srid:int=None, extended:bool=False) -> any:
+        """
+        Create a LineString from a list of coordinates.
+
+        :param coordinates: the list of coordinates.
+        :param srid: the SRID of the geometry.
+        """
+        if not isinstance(coordinates, list):
+            raise Exception("The input coordinates must be a list.")
+        line = LineString(coordinates)
+        if srid:
+            line = shapely.set_srid(line, srid)
+        if extended:
+            line = ExtendedGeometry(line)
+        return line
+    
+    @staticmethod
+    def makePolygon(coordinates, srid:int=None, extended:bool=False) -> any:
+        """
+        Create a Polygon from a list of coordinates.
+
+        :param coordinates: the list of coordinates.
+        :param srid: the SRID of the geometry.
+        """
+        if not isinstance(coordinates, list):
+            raise Exception("The input coordinates must be a list.")
+        polygon = Polygon(coordinates)
+        if srid:
+            polygon = shapely.set_srid(polygon, srid)
+        if extended:
+            polygon = ExtendedGeometry(polygon)
+        return polygon
+    
+    @staticmethod
+    def makePoint(coordinates, srid:int=None, extended:bool=False) -> any:
+        """
+        Create a Point from a list of coordinates.
+
+        :param coordinates: the list of coordinates.
+        :param srid: the SRID of the geometry.
+        """
+        if not isinstance(coordinates, list):
+            raise Exception("The input coordinates must be a list.")
+        point = Point(coordinates)
+        if srid:
+            point = shapely.set_srid(point, srid)
+        if extended:
+            point = ExtendedGeometry(point)
+        return point
 
     # static method to convert geometry to 2D
     @staticmethod
@@ -87,20 +218,21 @@ class HyGeomUtils():
 
     
     @staticmethod
-    def fromWkt(wkt:str, srid:int=None) -> BaseGeometry:
+    def fromWkt(wkt:str, srid:int=None, extended:bool=False) -> any:
         if wkt[:4].upper().startswith("SRID"):
             # split to get srid and geom
             srid, geom = wkt.split(";")
             geom = loads(geom)
             srid = int(srid.split("=")[1])
             geom = shapely.set_srid(geom, srid)
-            return geom
         elif srid:
             geom = loads(wkt)
             geom = shapely.set_srid(geom, srid)
-            return geom
         else:
-            return loads(wkt)
+            geom = loads(wkt)
+        if extended:
+            geom = ExtendedGeometry(geom)
+        return geom
     
     @staticmethod
     def toWkt(geom:BaseGeometry) -> str:

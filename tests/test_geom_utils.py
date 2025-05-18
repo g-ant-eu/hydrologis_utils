@@ -27,6 +27,28 @@ class TestGeomutils(unittest.TestCase):
         self.assertEqual(geom, geom2)
         self.assertEqual(geom1, geom2)
 
+    def test_extended(self):
+        # create a wkt of a Linstring
+        wkt = "LINESTRING (30 10, 10 30, 40 40)"
+        extGeom = HyGeomUtils.fromWkt(wkt, extended=True)
+        self.assertIsNone(extGeom.get_srid())
+
+        extGeom.set_srid(4326)
+        self.assertEqual(extGeom.get_srid(), 4326)
+
+    def test_extended_geom_creation(self):
+        extGeom = HyGeomUtils.makePoint([30, 10], srid=4326, extended=True)
+        self.assertIsInstance(extGeom.get_basegeometry(), Point)
+        self.assertEqual(extGeom.get_srid(), 4326)
+
+        extGeom = HyGeomUtils.makeLineString([[30, 10], [10, 30], [40, 40]], srid=4326, extended=True)
+        self.assertIsInstance(extGeom.get_basegeometry(), LineString)
+        self.assertEqual(extGeom.get_srid(), 4326)
+
+        extGeom = HyGeomUtils.makePolygon([[30, 10], [10, 30], [40, 40]], srid=4326, extended=True)
+        self.assertIsInstance(extGeom.get_basegeometry(), Polygon)
+        self.assertEqual(extGeom.get_srid(), 4326)
+
 
     def test_geom_2d(self):
         # create a 3d Linestring wkt
