@@ -34,18 +34,18 @@ class ExtendedGeometry():
         """
         self.geom = shapely.set_srid(self.geom, srid)
 
-    def rotate(self, angle:float, origin:Point) -> BaseGeometry:
+    def rotate(self, angle:float, origin:Point) -> 'ExtendedGeometry':
         """
         Rotate the geometry by a given angle around a given origin.
         """
         geom = shapely.affinity.rotate(self.geom, angle, origin)
         return ExtendedGeometry(geom)
 
-    def buffer(self, distance:float) -> BaseGeometry:
+    def buffer(self, distance:float) -> 'ExtendedGeometry':
         """
         Buffer the geometry by a given distance.
         """
-        return self.geom.buffer(distance)
+        return ExtendedGeometry(self.geom.buffer(distance))
     
     def get_coordinates(self) -> list:
         """
@@ -83,11 +83,11 @@ class ExtendedGeometry():
         """
         return self.geom.envelope
     
-    def get_intersection(self, other:BaseGeometry) -> BaseGeometry:
+    def get_intersection(self, other:'ExtendedGeometry') -> 'ExtendedGeometry':
         """
         Get the intersection of the geometry with another geometry.
         """
-        return self.geom.intersection(other)
+        return ExtendedGeometry(self.geom.intersection(other))
     
     def wkt(self) -> str:
         """
