@@ -93,7 +93,7 @@ class ExtendedGeometry():
         """
         Get the WKT representation of the geometry.
         """
-        return self.geom.wkt
+        return HyGeomUtils.toWkt(self.geom)
     
     
 class HyGeomUtils():
