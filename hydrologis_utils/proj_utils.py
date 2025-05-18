@@ -2,6 +2,7 @@
 import pyproj
 from shapely.ops import transform as shpTransform
 from shapely.geometry.base import BaseGeometry
+from hydrologis_utils.geom_utils import ExtendedGeometry
 
 class HyProjManager():
 
@@ -17,3 +18,11 @@ class HyProjManager():
 
     def transform(self, geom:BaseGeometry) -> BaseGeometry:
         return shpTransform(self.transformation, geom)
+    
+    def transformExtended(self, extGeom:ExtendedGeometry):
+        geom = extGeom.get_basegeometry()
+        transformedGeom = self.transform(geom)
+        extGeom.set_basegeometry(transformedGeom)
+        extGeom.set_srid(self.destinationEpsg)
+        return extGeom
+        
