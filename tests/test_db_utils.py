@@ -104,6 +104,23 @@ class TestDbUtils(unittest.TestCase):
         self.db.dropTable(view_name)
         self.assertFalse(self.db.hasView(view_name))
 
+    def test_geopackage_tiles(self):
+        
+        url = DbType.GPKG.url(dbname="/home/hydrologis/storage/lavori_tmp/UNIBZ_LAMBORGHINI/aoi3857.gpkg")
+        db = GpkgDb(url, echo=False)
+
+        table = "ortofoto3857"
+        self.assertTrue(db.hasTable(table))
+
+        count = db.getRecordCount(table)
+        self.assertEqual(count, 27993)
+
+        tileData = db.getTile(table, 1113350, 757299, 21)
+        # wirte tile data to file
+        filePath = "/home/hydrologis/storage/lavori_tmp/UNIBZ_LAMBORGHINI/tile.png"
+        with open(filePath, 'wb') as f:
+            f.write(tileData)
+        self.assertTrue(os.path.exists(filePath))
 
 
     # def test_sqlite_spatial(self):        

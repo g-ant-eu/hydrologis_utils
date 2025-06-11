@@ -333,16 +333,43 @@ def _checkSpatialiteLibraryPath(dynamicLibPath):
 
 
 class GpkgDb(ADb):
+    TABLE_TILES = "tiles";
+    COL_TILES_ZOOM_LEVEL = "zoom_level";
+    COL_TILES_TILE_COLUMN = "tile_column";
+    COL_TILES_TILE_ROW = "tile_row";
+    COL_TILES_TILE_DATA = "tile_data";
+    SELECTQUERY = "SELECT tile_data from {} where zoom_level={} AND tile_column={} AND tile_row={}"
+    
+
     def __init__(self, url, encoding="utf-8", echo=True):
         super().__init__(url, encoding=encoding, echo=echo)
         self.supportsSchema = False
         _checkSpatialiteLibraryPath(self.dynamicLibPath)
         listen(self.engine, "connect", load_spatialite_gpkg)
+        self.tileRowType = "osm"; # could be tms in some cases
 
     def getDbInfo(self):
         res = self.query(
             "SELECT sqlite_version() as sqliteversion;")
         return [res.pgversion, res.pgisversion]
+    
+    def getTile(self, tableName:str, tx:int, tyOsm:int, zoom:int):
+        ty = tyOsm;
+        if self.tileRowType == "tms":
+            tmsTileXY = self.osmTile2TmsTile(tx, tyOsm, zoom)
+            ty = tmsTileXY[1]
+
+        sql = GpkgDb.SELECTQUERY.format(tableName,zoom, tx, ty)
+        result = self.execute(sql)
+        for row in result:
+            if row[0]:
+                return row[0]
+        return None
+    
+    
+    def osmTile2TmsTile(self, tx:int, ty:int, zoom:int):
+        return [tx, int((pow(2, zoom) - 1) - ty)];
+    
 
 class SpatialiteDb(ADb):
     def __init__(self, url, encoding="utf-8", echo=True, dynamicLibPath=None):
