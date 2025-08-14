@@ -132,6 +132,31 @@ class TestRenderUtils(unittest.TestCase):
         diff = ImageChops.difference(tileImage, Image.open(compareImage))
         self.assertIsNone(diff.getbbox())
 
+    def test_tile2lonlat(self):
+        from hydrologis_utils.render_utils import HySlippyTiles
+        
+        # Test tile2lon
+        lon = HySlippyTiles.tile2lon(0, 0)
+        self.assertAlmostEqual(lon, -180.0)
+        
+        lat = HySlippyTiles.tile2lat(0, 0)
+        self.assertAlmostEqual(lat, 85.0511287798066)
+        
+        x, y = HySlippyTiles.getTileXY(lon, lat, 0)
+        self.assertEqual(x, 0)
+        self.assertEqual(y, 0)
+
+    def test_osm_render(self):
+        from hydrologis_utils.render_utils import HySlippyTiles
+        
+        HySlippyTiles.getImageFromTileService(
+            tileService="https://tile.openstreetmap.org/{z}/{x}/{y}.png", 
+            envelopeLL=(10.0, 45.0, 11.0, 46.0),
+            zoom=7,
+            imageSize=(512, 512), 
+            dumpPath="test_osm_render.png"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

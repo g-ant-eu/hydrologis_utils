@@ -6,6 +6,8 @@ from hydrologis_utils.geom_utils import HyGeomUtils, ExtendedGeometry
 from hydrologis_utils.color_utils import HyColor
 import math
 from typing import List, Tuple
+import requests
+from io import BytesIO
 
 class HyStyle():
     def __init__(self, fillColor:HyColor = None, strokeColor:HyColor = None, strokeWidth:int = 2, size:int = 15):
@@ -28,14 +30,123 @@ class HyStyle():
 
 class HySlippyTiles():
     @staticmethod
-    def tile2lon( x:int, zoom:int ):
+    def tile2lon( x:int, zoom:int ) -> float:
+        """ Convert a tile x coordinate to longitude.
+        Note that the returned longitude represents the left side of the tile.
+        :param x: the tile x coordinate
+        :param zoom: the zoom level
+        :return: the longitude in degrees
+        """
         return x / pow(2.0, zoom) * 360.0 - 180.0
     
     @staticmethod
-    def tile2lat( y:int, zoom:int ):
+    def tile2lat( y:int, zoom:int ) -> float:
+        """ Convert a tile y coordinate to latitude.
+
+        Note that the returned latitute represents the top of the tile.
+
+        :param y: the tile y coordinate
+        :param zoom: the zoom level
+        :return: the latitude in degrees
+        """ 
         n = math.pi - (2.0 * math.pi * y) / pow(2.0, zoom)
         return math.degrees(math.atan(math.sinh(n)))
     
+    @staticmethod
+    def getTileXY( lon:float, lat:float, zoom:int ) -> Tuple[int, int]:
+        """
+        Get the tile x and y for a given longitude and latitude at a given zoom level.
+        """
+        lat_rad = math.radians(lat)
+        n = pow(2.0, zoom)
+        x = int((lon + 180.0) / 360.0 * n)
+        y = int((1.0 - (math.log(math.tan(lat_rad) + 1.0 / math.cos(lat_rad)) / math.pi)) / 2.0 * n)
+        return x, y
+
+    @staticmethod
+    def getTileBounds( x:int, y:int, zoom:int ) -> List[float]:
+        """ Get the bounds of a tile in longitude and latitude.
+        :param x: the tile x coordinate
+        :param y: the tile y coordinate
+        :param zoom: the zoom level
+        :return: a list of [xmin, ymin, xmax, ymax] in longitude and latitude
+        """
+        xmin = HySlippyTiles.tile2lon(x, zoom)
+        xmax = HySlippyTiles.tile2lon(x + 1, zoom)
+        ymin = HySlippyTiles.tile2lat(y + 1, zoom)
+        ymax = HySlippyTiles.tile2lat(y, zoom)
+        return [xmin, ymin, xmax, ymax]
+    
+    @staticmethod
+    def getImageFromTileService( tileService:str, envelopeLL:List[float], zoom:int, imageSize:Tuple[int, int], dumpPath:str = None ) -> Image:
+        """
+        Get an image from a tile service in a given envelope at a certain zoomlevel.
+
+        :param tileService: the tile service URL, e.g. "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        :param envelopeLL: the envelope in longitude and latitude as a list of [xmin, ymin, xmax, ymax]
+        :param zoom: the zoom level
+        :param imageSize: the size of the image to return as a tuple (width, height)
+        :param dumpPath: optional path to save the fetched tiles (for debugging purposes)
+        :return: an Image object with the tile image
+        """
+
+        # Calculate the tile x and y coordinates for the envelope
+        x1, y1 = HySlippyTiles.getTileXY(envelopeLL[0], envelopeLL[3], zoom)
+        x2, y2 = HySlippyTiles.getTileXY(envelopeLL[2], envelopeLL[1], zoom)
+
+        # Create a list of tile URLs to fetch
+        tileUrls = []
+        for x in range(x1, x2 + 1):
+            for y in range(y1, y2 + 1):
+                tileUrl = tileService.format(z=zoom, x=x, y=y)
+                tileUrls.append(tileUrl)
+
+        # Fetch the tiles and create a blank image
+        images = []
+        for tileUrl in tileUrls:
+            try:
+                headers = {
+                    "User-Agent": "HydroloGISOpenMapUtils/1.0 (+https://github.com/g-ant-eu/hydrologis_utils; )",
+                    "Referer": "https://github.com/g-ant-eu/hydrologis_utils"  # if applicable
+                }
+
+
+                response = requests.get(tileUrl, headers=headers)
+                response.raise_for_status()  # Ensure we got the image successfully
+
+                tileImage = Image.open(BytesIO(response.content))
+                images.append(tileImage)
+            except Exception as e:
+                print(f"Error fetching tile {tileUrl}: {e}")
+
+        if not images:
+            return None
+        
+        # Create a blank image to paste the tiles into
+        tileWidth, tileHeight = images[0].size
+        # Calculate the size of the full image
+        fullWidth = (x2 - x1 + 1) * tileWidth
+        fullHeight = (y2 - y1 + 1) * tileHeight
+        tmpImageSize = (fullWidth, fullHeight)
+        fullImage = Image.new("RGBA", tmpImageSize, (0, 0, 0, 0))
+        for i, img in enumerate(images):
+            x = (i % (x2 - x1 + 1)) * tileWidth
+            y = (i // (x2 - x1 + 1)) * tileHeight
+            fullImage.paste(img, (x, y))
+        # Resize the full image to the requested size, but 
+        # maintain the aspect ratio, in case override one dimension of imageSize
+        if imageSize[0] != fullWidth or imageSize[1] != fullHeight:
+            # calculate image ratio
+            ratio = min(imageSize[0] / fullWidth, imageSize[1] / fullHeight)
+            newSize = (int(fullWidth * ratio), int(fullHeight * ratio))
+            fullImage = fullImage.resize(newSize, Image.Resampling.LANCZOS)
+        
+        if dumpPath:
+            fullImage.save(dumpPath, format='PNG')
+
+        return fullImage
+        
+        
     
 
 class HyGeomRenderer():
