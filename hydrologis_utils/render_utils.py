@@ -90,6 +90,10 @@ class HySlippyTiles():
         :return: an Image object with the tile image
         """
 
+        headers = {
+            "User-Agent": "HydroloGISOpenMapUtils/1.0 (+https://github.com/g-ant-eu/hydrologis_utils; )",
+            "Referer": "https://github.com/g-ant-eu/hydrologis_utils"  # if applicable
+        }
         # Calculate the tile x and y coordinates for the envelope
         x1, y1 = HySlippyTiles.getTileXY(envelopeLL[0], envelopeLL[3], zoom)
         x2, y2 = HySlippyTiles.getTileXY(envelopeLL[2], envelopeLL[1], zoom)
@@ -101,15 +105,11 @@ class HySlippyTiles():
                 tileUrl = tileService.format(z=zoom, x=x, y=y)
                 tileUrls.append(tileUrl)
 
-        # Fetch the tiles and create a blank image
+
+        # Fetch the tiles
         images = []
         for tileUrl in tileUrls:
             try:
-                headers = {
-                    "User-Agent": "HydroloGISOpenMapUtils/1.0 (+https://github.com/g-ant-eu/hydrologis_utils; )",
-                    "Referer": "https://github.com/g-ant-eu/hydrologis_utils"  # if applicable
-                }
-
 
                 response = requests.get(tileUrl, headers=headers)
                 response.raise_for_status()  # Ensure we got the image successfully
@@ -125,14 +125,20 @@ class HySlippyTiles():
         # Create a blank image to paste the tiles into
         tileWidth, tileHeight = images[0].size
         # Calculate the size of the full image
-        fullWidth = (x2 - x1 + 1) * tileWidth
-        fullHeight = (y2 - y1 + 1) * tileHeight
+        tilesX = (x2 - x1 + 1)
+        fullWidth = tilesX * tileWidth
+        tilesY = (y2 - y1 + 1)
+        fullHeight = tilesY * tileHeight
         tmpImageSize = (fullWidth, fullHeight)
         fullImage = Image.new("RGBA", tmpImageSize, (0, 0, 0, 0))
         for i, img in enumerate(images):
-            x = (i % (x2 - x1 + 1)) * tileWidth
-            y = (i // (x2 - x1 + 1)) * tileHeight
+            # With x outer, y inner:
+            # i = (x - x1)*tilesY + (y - y1)
+            x = (i // tilesY) * tileWidth
+            y = (i %  tilesY) * tileHeight
             fullImage.paste(img, (x, y))
+
+            
         # Resize the full image to the requested size, but 
         # maintain the aspect ratio, in case override one dimension of imageSize
         if imageSize[0] != fullWidth or imageSize[1] != fullHeight:

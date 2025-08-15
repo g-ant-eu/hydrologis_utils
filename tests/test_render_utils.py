@@ -151,9 +151,9 @@ class TestRenderUtils(unittest.TestCase):
         
         HySlippyTiles.getImageFromTileService(
             tileService="https://tile.openstreetmap.org/{z}/{x}/{y}.png", 
-            envelopeLL=(10.0, 45.0, 11.0, 46.0),
-            zoom=7,
-            imageSize=(512, 512), 
+            envelopeLL=[11.327618833333332, 44.49020616666667, 11.331618833333334, 44.4915395],
+            zoom=19,
+            imageSize=(3120, 1441), 
             dumpPath="test_osm_render.png"
         )
 
