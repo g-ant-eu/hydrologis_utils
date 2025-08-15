@@ -53,15 +53,25 @@ class HySlippyTiles():
         return math.degrees(math.atan(math.sinh(n)))
     
     @staticmethod
-    def getTileXY( lon:float, lat:float, zoom:int ) -> Tuple[int, int]:
+    def getTileXY(lon: float, lat: float, zoom: int, fractional: bool = False) -> Tuple[float, float]:
         """
         Get the tile x and y for a given longitude and latitude at a given zoom level.
+
+        :param lon: Longitude in degrees
+        :param lat: Latitude in degrees
+        :param zoom: Zoom level
+        :param fractional: If True, return fractional tile coordinates (floats).
+                        If False, return integer tile coordinates (tile indices).
+        :return: (x, y) tile coordinates
         """
         lat_rad = math.radians(lat)
         n = pow(2.0, zoom)
-        x = int((lon + 180.0) / 360.0 * n)
-        y = int((1.0 - (math.log(math.tan(lat_rad) + 1.0 / math.cos(lat_rad)) / math.pi)) / 2.0 * n)
-        return x, y
+        x = (lon + 180.0) / 360.0 * n
+        y = (1.0 - (math.log(math.tan(lat_rad) + 1.0 / math.cos(lat_rad)) / math.pi)) / 2.0 * n
+        if fractional:
+            return x, y
+        else:
+            return int(x), int(y)
 
     @staticmethod
     def getTileBounds( x:int, y:int, zoom:int ) -> List[float]:
@@ -138,14 +148,43 @@ class HySlippyTiles():
             y = (i %  tilesY) * tileHeight
             fullImage.paste(img, (x, y))
 
+
+        # The image size is now expanded to adapt to contain tghe complete tiles. 
+        # We now need to crop away the parts that are outside the envelope.
+
+        # Fractional tile coords for the envelope corners
+        xUL, yUL = HySlippyTiles.getTileXY(envelopeLL[0], envelopeLL[3], zoom, fractional=True)
+        xLR, yLR = HySlippyTiles.getTileXY(envelopeLL[2], envelopeLL[1], zoom, fractional=True)
+
+        # Convert to pixel offsets within stitched image whose origin is at (x1, y1)
+        crop_left = (xUL - x1) * tileWidth
+        crop_top = (yUL - y1) * tileHeight
+        crop_right = (xLR - x1) * tileWidth
+        crop_bottom = (yLR - y1) * tileHeight
+
+        # Use floor for left/top and ceil for right/bottom to fully include the envelope,
+        # then clamp to image bounds.
+        from math import floor, ceil
+        left = max(0, int(floor(crop_left)))
+        top = max(0, int(floor(crop_top)))
+        right = min(fullWidth,  int(ceil(crop_right)))
+        bottom = min(fullHeight, int(ceil(crop_bottom)))
+
+        if right > left and bottom > top:
+            fullImage = fullImage.crop((left, top, right, bottom))
+            croppedWidth, croppedHeight = fullImage.size
+        else:
+            # Fallback: nothing to crop (shouldn't happen if inputs are valid)
+            croppedWidth, croppedHeight = fullWidth, fullHeight
+        # -----------------------------------------------
             
         # Resize the full image to the requested size, but 
         # maintain the aspect ratio, in case override one dimension of imageSize
-        if imageSize[0] != fullWidth or imageSize[1] != fullHeight:
-            # calculate image ratio
-            ratio = min(imageSize[0] / fullWidth, imageSize[1] / fullHeight)
-            newSize = (int(fullWidth * ratio), int(fullHeight * ratio))
+        if imageSize[0] != croppedWidth or imageSize[1] != croppedHeight:
+            ratio = min(imageSize[0] / croppedWidth, imageSize[1] / croppedHeight)
+            newSize = (int(round(croppedWidth * ratio)), int(round(croppedHeight * ratio)))
             fullImage = fullImage.resize(newSize, Image.Resampling.LANCZOS)
+
         
         if dumpPath:
             fullImage.save(dumpPath, format='PNG')

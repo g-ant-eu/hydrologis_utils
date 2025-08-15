@@ -146,16 +146,50 @@ class TestRenderUtils(unittest.TestCase):
         self.assertEqual(x, 0)
         self.assertEqual(y, 0)
 
-    def test_osm_render(self):
+    def test_osm_render_with_point(self):
         from hydrologis_utils.render_utils import HySlippyTiles
+        import os
+        from PIL import Image
         
-        HySlippyTiles.getImageFromTileService(
-            tileService="https://tile.openstreetmap.org/{z}/{x}/{y}.png", 
-            envelopeLL=[11.327618833333332, 44.49020616666667, 11.331618833333334, 44.4915395],
-            zoom=19,
-            imageSize=(3120, 1441), 
-            dumpPath="test_osm_render.png"
-        )
+        dumpPath = "test_osm_render.png"
+        dumPathWithPoint = "test_osm_render_point.png"
+        mapWidth = 3120
+        mapHeight = 1441
+        zoomLevel = 19
+        envelopeLL = [11.327618833333332, 44.49020616666667, 11.331618833333334, 44.4915395]
+        if not os.path.exists(dumpPath):
+            HySlippyTiles.getImageFromTileService(
+                tileService="https://tile.openstreetmap.org/{z}/{x}/{y}.png", 
+                envelopeLL=envelopeLL,
+                zoom=zoomLevel,
+                imageSize=(mapWidth, mapHeight), 
+                dumpPath=dumpPath
+            )
+        mapImage = Image.open(dumpPath)
+        mapImageSize = mapImage.size
+
+        point = HyGeomUtils.fromWkt("POINT (11.329618833333333 44.490872833333334)")
+        pointStyle = HyStyle(fillColor=HyColor(hexColor="#ff0000cc"), \
+                             strokeColor=HyColor(hexColor="#640408ff"), \
+                             strokeWidth=10, size=100)
+        pointRenderer = HyGeomRenderer(mapImageSize)
+        pointRenderer.setPointStyle(pointStyle)
+        pointImage = pointRenderer.renderImage(imagesBoundsLongLat=envelopeLL,
+                                  geometriesLongLat= [point],
+                                  antialias= True,)
+        #  overlay the point image on the map image
+        mapImage.paste(pointImage, (0,0), pointImage)
+        mapImage.save(dumPathWithPoint, format='PNG') 
+
+        compareImage = "./tests/samples/test_osm_render_point.png"
+        diff = ImageChops.difference(Image.open(dumPathWithPoint), Image.open(compareImage))
+        self.assertIsNone(diff.getbbox())
+
+        # cleanup
+        if os.path.exists(dumpPath):
+            os.remove(dumpPath)
+        if os.path.exists(dumPathWithPoint):
+            os.remove(dumPathWithPoint)
 
 
 if __name__ == "__main__":
