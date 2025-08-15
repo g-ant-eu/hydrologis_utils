@@ -1,6 +1,6 @@
 [project]
 name = "hydrologis_utils"
-version = "0.2.0"
+version = "0.3.0"
 description = "HydroloGIS Utils Library."
 authors = [
     {name = "Andrea Antonello", email = "andrea.antonello@gmail.com"},
