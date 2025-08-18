@@ -156,7 +156,7 @@ class TestRenderUtils(unittest.TestCase):
         mapWidth = 3120
         mapHeight = 1441
         zoomLevel = 19
-        envelopeLL = [11.327618833333332, 44.49020616666667, 11.331618833333334, 44.4915395]
+        envelopeLL = [12.040465, 44.20367933333333, 12.044465, 44.20501266666667]
         if not os.path.exists(dumpPath):
             HySlippyTiles.getImageFromTileService(
                 tileService="https://tile.openstreetmap.org/{z}/{x}/{y}.png", 
@@ -168,7 +168,7 @@ class TestRenderUtils(unittest.TestCase):
         mapImage = Image.open(dumpPath)
         mapImageSize = mapImage.size
 
-        point = HyGeomUtils.fromWkt("POINT (11.329618833333333 44.490872833333334)")
+        point = HyGeomUtils.fromWkt("POINT (12.042465 44.204346)")
         pointStyle = HyStyle(fillColor=HyColor(hexColor="#ff0000cc"), \
                              strokeColor=HyColor(hexColor="#640408ff"), \
                              strokeWidth=10, size=100)
