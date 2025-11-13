@@ -15,6 +15,7 @@ from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import Session
 import os
+from contextlib import contextmanager
 
 import logging
 logger = logging.getLogger(__name__)
@@ -83,17 +84,68 @@ class ADb(ABC):
     def __init__(self, url, encoding=None, echo=True):
         self.supportsSchema = True
         self.url = url
+
+        engine_kwargs = {"echo": echo}
         if encoding:
-            self.engine = create_engine(
-                f"{url}?charset={encoding}", echo=echo)
-        else:
-            self.engine = create_engine(
-                url, echo=echo)
+            url = f"{url}?charset={encoding}"
+        # Light auto-hardening for Postgres URLs
+        if url.startswith("postgresql"):
+            engine_kwargs.update({
+                "pool_pre_ping": True,
+                "connect_args": {
+                    "keepalives": 1,
+                    "keepalives_idle": 30,
+                    "keepalives_interval": 10,
+                    "keepalives_count": 5,
+                },
+            })
+
+        self.engine = create_engine(url, **engine_kwargs)
+
         self.dynamicLibPath = None
         self.metadata = MetaData()
         # self.metadata.reflect(bind=self.engine)
 
+    # -------------------------
+    # Helpers (NEW)
+    # -------------------------
+    @contextmanager
+    def _connect_streaming(self):
+        """
+        Connection set to stream results (server-side cursor on PG).
+        """
+        conn = self.engine.connect().execution_options(stream_results=True)
+        try:
+            yield conn
+        finally:
+            conn.close()
 
+    def _split_schema_table(self, conn, table_name: str) -> tuple[str, str]:
+        """
+        Supports 'schema.table' or plain 'table' using the default schema.
+        """
+        if "." in table_name:
+            schema, table = table_name.split(".", 1)
+            return schema.strip('"'), table.strip('"')
+        schema = inspect(conn).default_schema_name
+        return schema, table_name.strip('"')
+
+    def _q(self, ident: str) -> str:
+        """Double-quote an identifier safely (no reflection)."""
+        return f'"{ident}"'
+
+    def _build_select_sql(self, schema: str, table: str,
+                          where: str | None = None,
+                          order_by: str | None = None,
+                          limit: int | None = None) -> str:
+        sql = f"SELECT * FROM {self._q(schema)}.{self._q(table)}"
+        if where:
+            sql += f" WHERE {where}"
+        if order_by:
+            sql += f" ORDER BY {order_by}"
+        if limit:
+            sql += f" LIMIT {int(limit)}"
+        return sql
 
     @abstractmethod
     def getDbInfo(self):
@@ -168,21 +220,14 @@ class ADb(ABC):
         :param limit: optional parameter to limit the return count.
         :param where: optional where clause.
         """
-
-        # Replace 'your_table_name' with the actual name of your table
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
-
-        stmt = select(table)
-        if where:
-            stmt = stmt.where(text(where))
-        if order_by:
-            stmt = stmt.order_by(text(order_by))
-        if limit:
-            stmt = stmt.limit(limit)
-
         with self.engine.connect() as conn:
-            result = conn.execute(stmt)
-            return result.all()
+            schema, table = self._split_schema_table(conn, table_name)
+            sql = self._build_select_sql(schema, table, where=where, order_by=order_by, limit=limit)
+            # exec_driver_sql avoids compilation overhead; text() also fine.
+            result = conn.exec_driver_sql(sql)
+            return result.fetchall()
+
+    
 
     def getTableDataStreamed(self, table_name, order_by=None, where=None, chunk_size=1000):
         """
@@ -195,18 +240,31 @@ class ADb(ABC):
         :param order_by: optional parameter to order the data (name of columns to order by).
         :param where: optional where clause.
         :param chunk_size: number of rows per chunk."""
-        table = Table(table_name, self.metadata, autoload_with=self.engine)
+        from sqlalchemy.exc import OperationalError
+        attempts = 0
+        while attempts < 2:
+            attempts += 1
+            try:
+                with self._connect_streaming() as conn:
+                    schema, table = self._split_schema_table(conn, table_name)
+                    sql = self._build_select_sql(schema, table, where=where, order_by=order_by)
+                    cursor = conn.exec_driver_sql(sql)
 
-        stmt = select(table)
-        if where:
-            stmt = stmt.where(text(where))
-        if order_by:
-            stmt = stmt.order_by(text(order_by))
-
-        with self.engine.connect() as conn:
-            result = conn.execution_options(stream_results=True).execute(stmt)
-            for chunk in iter(lambda: result.fetchmany(chunk_size), []):
-                yield chunk
+                    while True:
+                        chunk = cursor.fetchmany(chunk_size)
+                        if not chunk:
+                            break
+                        yield chunk
+                return  # success, exit retry loop
+            except OperationalError as e:
+                # One automatic retry for transient backend restarts / network blips
+                if "server closed the connection unexpectedly" in str(e) and attempts < 2:
+                    try:
+                        self.engine.dispose()
+                    except Exception:
+                        pass
+                    continue
+                raise
 
     
     def getRecordCount(self, table_name) -> int:
