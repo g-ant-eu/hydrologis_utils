@@ -184,31 +184,30 @@ class ADb(ABC):
             result = conn.execute(stmt)
             return result.all()
 
+    def getTableDataStreamed(self, table_name, order_by=None, where=None, chunk_size=1000):
+        """
+        Yield table rows in chunks (streaming query).
 
-        # cols = self.getTableColumns(table_name)
-        # cols = [c.name for c in cols]
-        # sql = f"select {','.join(cols)} from {table_name}"
+        for rows in db.getTableDataStreamed("big_table", chunk_size=5000):
+            process(rows)
 
-        # if where:
-        #     sql += " where " + where
-        # if order_by:
-        #     sql += " order by " + order_by
-        # if limit:
-        #     sql += f" limit {limit}"
+        :param table_name: the table to list data from.
+        :param order_by: optional parameter to order the data (name of columns to order by).
+        :param where: optional where clause.
+        :param chunk_size: number of rows per chunk."""
+        table = Table(table_name, self.metadata, autoload_with=self.engine)
 
-        # dataList = []
-        # with self.engine.connect() as conn:
-        #     result = conn.execute(text(sql))
+        stmt = select(table)
+        if where:
+            stmt = stmt.where(text(where))
+        if order_by:
+            stmt = stmt.order_by(text(order_by))
 
-        #     for row in result:
-        #         i = 0
-        #         item = {}
-        #         for col in cols:
-        #             item[col] = row[i]
-        #             i=i+1
-        #         dataList.append(item)
-                
-        # return dataList
+        with self.engine.connect() as conn:
+            result = conn.execution_options(stream_results=True).execute(stmt)
+            for chunk in iter(lambda: result.fetchmany(chunk_size), []):
+                yield chunk
+
     
     def getRecordCount(self, table_name) -> int:
         """Return the count of the records of a table.
